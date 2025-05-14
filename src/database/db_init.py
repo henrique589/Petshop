@@ -10,7 +10,27 @@ def criar_tabelas():
             email TEXT NOT NULL,
             telefone TEXT NOT NULL,
             cpf TEXT NOT NULL UNIQUE
+<<<<<<< HEAD
+        )          
+=======
         )
+                   
+        CREATE TABLE IF NOT EXISTS produtos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            preco REAL NOT NULL,
+            estoque INTEGER NOT NULL       
+        )
+                   
+        CREATE TABLE IF NOT EXISTS servicos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            nome TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            preco REAL NOT NULL,
+            estoque INTEGER NOT NULL
+        )
+>>>>>>> f5b04a52cc22797c11d08fe1aa0a13a30d815be6
     ''')
     conn.commit()
     conn.close()
