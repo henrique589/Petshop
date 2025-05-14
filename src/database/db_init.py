@@ -27,6 +27,16 @@ def criar_tabelas():
             preco REAL NOT NULL,
             estoque INTEGER NOT NULL
         )
+                   
+        CREATE TABLE IF NOT EXISTS pets (
+            id_pet INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            nome_dono TEXT NOT NULL,
+            raca TEXT NOT NULL,
+            idade INTEGER NOT NULL,
+            peso INTEGER NOT NULL,
+            tipo_animal TEXT NOT NULL
+        )
     ''')
     conn.commit()
     conn.close()
