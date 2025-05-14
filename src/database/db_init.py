@@ -15,6 +15,32 @@ def criar_tabelas():
             cpf TEXT NOT NULL UNIQUE,
             FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
         )
+                   
+        CREATE TABLE IF NOT EXISTS produtos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            preco REAL NOT NULL,
+            estoque INTEGER NOT NULL       
+        )
+                   
+        CREATE TABLE IF NOT EXISTS servicos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            nome TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            preco REAL NOT NULL,
+            estoque INTEGER NOT NULL
+        )
+                   
+        CREATE TABLE IF NOT EXISTS pets (
+            id_pet INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            nome_dono TEXT NOT NULL,
+            raca TEXT NOT NULL,
+            idade INTEGER NOT NULL,
+            peso INTEGER NOT NULL,
+            tipo_animal TEXT NOT NULL
+        )
     ''')
 
     cursor.execute('''
