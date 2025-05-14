@@ -51,6 +51,7 @@ O projeto segue o padrão **MVC**, com as seguintes responsabilidades:
 ```bash
 git clone https://github.com/seu-usuario/petshop-system.git
 cd petshop-system
+```
 
 ---
 
