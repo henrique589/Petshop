@@ -11,6 +11,22 @@ def criar_tabelas():
             telefone TEXT NOT NULL,
             cpf TEXT NOT NULL UNIQUE
         )
+                   
+        CREATE TABLE IF NOT EXISTS produtos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            preco REAL NOT NULL,
+            estoque INTEGER NOT NULL       
+        )
+                   
+        CREATE TABLE IF NOT EXISTS servicos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            nome TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            preco REAL NOT NULL,
+            estoque INTEGER NOT NULL
+        )
     ''')
     conn.commit()
     conn.close()
