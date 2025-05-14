@@ -30,6 +30,9 @@ def criar_tabelas():
             preco REAL NOT NULL,
             estoque INTEGER NOT NULL
         )
+<<<<<<< HEAD
+>>>>>>> f5b04a52cc22797c11d08fe1aa0a13a30d815be6
+=======
 >>>>>>> f5b04a52cc22797c11d08fe1aa0a13a30d815be6
     ''')
     conn.commit()
