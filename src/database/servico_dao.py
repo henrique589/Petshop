@@ -25,16 +25,21 @@ class ServicoDAO:
         conn.commit()
         conn.close()
 
-    def remover(self, servico: Servico):
+    def remover(self, servico_id: int):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM servicos WHERE id=?", (servico.id,))
+        cursor.execute("DELETE FROM servicos WHERE id=?", (servico_id,))
         conn.commit()
         conn.close()
     
     def listar(self):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM servicos")
+        cursor.execute("SELECT id, nome, descricao, preco, estoque FROM servicos")
         linhas = cursor.fetchall()
-        return [Servico[*linha] for linha in linhas]
+        servicos = []
+        for linha in linhas:
+            id, nome, descricao, preco, estoque = linha
+            servicos.append(Servico(id, nome, descricao, preco, estoque))
+        conn.close()
+        return servicos
