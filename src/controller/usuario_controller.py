@@ -14,14 +14,7 @@ def cadastrar_cliente():
     cliente = Cliente(usuario_id, telefone, cpf)
     clienteDao = ClienteDAO()
     clienteDao.salvar(cliente)
-    print(f'✅ Cadastro realizado com sucesso!')
-
-def cadastrar_usuario_por_gerente():
-    nome, email, senha = solicitar_dados_usuario()
-    usuario = Usuario(nome, email, senha, tipo='funcionario')
-    dao = UsuarioDAO
-    dao.cadastrar_usuario(usuario)
-    print(f'✅ Cadastro realizado com sucesso!')    
+    print(f'✅ Cadastro realizado com sucesso!')   
 
 def login_usuario():
     email, senha = solicitar_login()

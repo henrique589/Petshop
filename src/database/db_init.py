@@ -7,6 +7,18 @@ def gerar_senha(senha):
 def criar_tabelas():
     conn =  sqlite3.connect('petshop.db')
     cursor = conn.cursor()
+    # Tabela usuarios
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            senha TEXT NOT NULL,
+            tipo TEXT NOT NULL
+        )
+    ''')
+
+    # Tabela clientes
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS clientes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -15,7 +27,20 @@ def criar_tabelas():
             cpf TEXT NOT NULL UNIQUE,
             FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
         )
-                   
+    ''')
+
+    # Tabela funcionarios
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS funcionarios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id INTEGER UNIQUE,
+            cargo TEXT,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+        )
+    ''')
+
+    # Tabela produtos
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS produtos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
@@ -23,7 +48,10 @@ def criar_tabelas():
             preco REAL NOT NULL,
             estoque INTEGER NOT NULL       
         )
-                   
+    ''')
+
+    # Tabela servicos
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS servicos (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
             nome TEXT NOT NULL,
@@ -31,7 +59,10 @@ def criar_tabelas():
             preco REAL NOT NULL,
             estoque INTEGER NOT NULL
         )
-                   
+    ''')
+
+    # Tabela pets
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS pets (
             id_pet INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
@@ -40,16 +71,6 @@ def criar_tabelas():
             idade INTEGER NOT NULL,
             peso INTEGER NOT NULL,
             tipo_animal TEXT NOT NULL
-        )
-    ''')
-
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nome TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            senha TEXT NOT NULL,
-            tipo TEXT NOT NULL
         )
     ''')
 

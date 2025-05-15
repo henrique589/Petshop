@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect
 from model.cliente import Cliente
 from database.cliente_dao import ClienteDAO
+from controller.funcionario_controller import cadastrar_funcionario
 
 app = Flask(__name__)
 
