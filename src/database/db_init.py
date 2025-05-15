@@ -11,7 +11,9 @@ def criar_tabelas():
             telefone TEXT NOT NULL,
             cpf TEXT NOT NULL UNIQUE
         )
-                   
+    ''')
+    
+    cursor.execute('''               
         CREATE TABLE IF NOT EXISTS produtos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
@@ -19,7 +21,9 @@ def criar_tabelas():
             preco REAL NOT NULL,
             estoque INTEGER NOT NULL       
         )
-                   
+    ''')
+    
+    cursor.execute('''               
         CREATE TABLE IF NOT EXISTS servicos (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
             nome TEXT NOT NULL,
@@ -28,5 +32,6 @@ def criar_tabelas():
             estoque INTEGER NOT NULL
         )
     ''')
+    
     conn.commit()
     conn.close()
