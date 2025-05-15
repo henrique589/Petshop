@@ -3,9 +3,9 @@ from controller.usuario_controller import (
     cadastrar_cliente,
     login_usuario
 )
-from controller.funcionario_controller import cadastrar_funcionario
 from controller.produto_controller import ProdutoController
 from controller.servico_controller import ServicoController
+from controller.funcionario_controller import FuncionarioController
 
 def tela_cliente():
     print("\n Menu do Cliente (em desenvolvimento)")
@@ -18,6 +18,7 @@ def tela_funcionario():
 def tela_gerente():
     produtoController = ProdutoController()
     servicoController = ServicoController()
+    funcionarioController = FuncionarioController()
     while True:
         print("\n👨‍💼 Menu do Gerente")
         print("1 - Cadastrar Funcionário")
@@ -33,7 +34,7 @@ def tela_gerente():
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
-            cadastrar_funcionario()
+            funcionarioController.cadastrar_funcionario()
         elif opcao == "2":
             produtoController.cadastrar_produto()
         elif opcao == "3":
