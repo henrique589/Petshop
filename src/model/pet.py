@@ -1,7 +1,7 @@
 class Pet:
     def __init__(self, nome, nome_dono , raca, idade, peso, tipo_animal):
         self.nome = nome
-        sellf.nome_dono=nome_dono
+        self.nome_dono=nome_dono
         self.raca=raca
         self.idade=idade
         self.peso=peso
