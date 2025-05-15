@@ -9,8 +9,8 @@ class ClienteDAO:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO clientes (nome, email, telefone, cpf)
-            VALUES (?, ?, ?, ?)
-        ''', (cliente.nome, cliente.email, cliente.telefone, cliente.cpf))
+            INSERT INTO clientes (usuario_id, telefone, cpf)
+            VALUES (?, ?, ?)
+        ''', (cliente.usuario_id, cliente.telefone, cliente.cpf))
         conn.commit()
         conn.close()
