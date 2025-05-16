@@ -70,7 +70,7 @@ def criar_tabelas():
             raca TEXT NOT NULL,
             idade INTEGER NOT NULL,
             peso INTEGER NOT NULL,
-            tipo_animal TEXT NOT NULL
+            tipo_animal TEXT NOT NULL,
             FOREIGN KEY (id_dono) REFERENCES clientes(id)
         )
     ''')  #id dono
