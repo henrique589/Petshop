@@ -21,6 +21,9 @@ def tela_gerente():
     while True:
         print("\n👨‍💼 Menu do Gerente")
         print("1 - Cadastrar Funcionário")
+        print("1.1 - Atualizar Funcionário")
+        print("1.2 - Remover Funcionário")
+        print("1.3 - Listar Funcionários")
         print("2 - Cadastrar Produto")
         print("3 - Atualizar Produto")
         print("4 - Remover Produto")
@@ -35,6 +38,12 @@ def tela_gerente():
 
         if opcao == "1":
             funcionarioController.cadastrar_funcionario()
+        elif opcao == "1.1":
+            funcionarioController.atualizar_funcionario()
+        elif opcao == "1.2":
+            funcionarioController.remover_funcionario()
+        elif opcao == "1.3":
+            funcionarioController.listar_funcionarios()
         elif opcao == "2":
             produtoController.cadastrar_produto()
         elif opcao == "3":
