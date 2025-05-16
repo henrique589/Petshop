@@ -74,6 +74,8 @@ def criar_tabelas():
         )
     ''')
 
+   # cursor.execute("DELETE FROM usuarios WHERE email = 'elder@gmail.com'")
+
     # Cadastro gerente
     cursor.execute('''
         INSERT OR IGNORE INTO usuarios (id, nome, email, senha, tipo)

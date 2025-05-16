@@ -1,8 +1,5 @@
 from database.db_init import criar_tabelas
-from controller.usuario_controller import (
-    cadastrar_cliente,
-    login_usuario
-)
+from controller.usuario_controller import UsuarioController
 from controller.produto_controller import ProdutoController
 from controller.servico_controller import ServicoController
 from controller.funcionario_controller import FuncionarioController
@@ -58,6 +55,7 @@ def tela_gerente():
 
 def tela_inicial():
     criar_tabelas()
+    usuarioController = UsuarioController()
     while True:
         print("\n Sistema Pet Shop")
         print("1 - Login")
@@ -65,7 +63,7 @@ def tela_inicial():
         print("3 - Sair")
         opcao = input("Escolha uma opção: ")
         if opcao == "1":
-            tipo = login_usuario()
+            tipo = usuarioController.login_usuario()
             if tipo == "cliente":
                 tela_cliente()
             elif tipo == "funcionario":
@@ -73,7 +71,7 @@ def tela_inicial():
             elif tipo == "gerente":
                 tela_gerente()
         elif opcao == "2":
-            cadastrar_cliente()
+            usuarioController.cadastrar_cliente()
         elif opcao == "3":
             print("👋 Encerrando o sistema.")
             break
