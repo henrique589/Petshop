@@ -14,3 +14,14 @@ class PetDAO:
         ''', (pet.nome,pet.id_dono, pet.raca, pet.idade, pet.tipo_animal))
         conn.commit()
         conn.close()
+
+    @staticmethod
+    def consultar_nome_dono(self,nome_dono):
+        conn = sqlite3.connect('petshop.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM clientes WHERE nome = ?", (nome_dono,))
+        resultado = cursor.fetchone()
+        conn.close()
+        if resultado:
+            return resultado[0]  # retorna apenas o id
+        return None
