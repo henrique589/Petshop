@@ -3,6 +3,7 @@ from controller.usuario_controller import UsuarioController
 from controller.produto_controller import ProdutoController
 from controller.servico_controller import ServicoController
 from controller.funcionario_controller import FuncionarioController
+from controller.pet_controller import PetController
 
 def tela_cliente():
     print("\n Menu do Cliente (em desenvolvimento)")
@@ -16,6 +17,7 @@ def tela_gerente():
     produtoController = ProdutoController()
     servicoController = ServicoController()
     funcionarioController = FuncionarioController()
+    petController=PetController()
     while True:
         print("\n👨‍💼 Menu do Gerente")
         print("1 - Cadastrar Funcionário")
@@ -27,7 +29,8 @@ def tela_gerente():
         print("7 - Atualizar Serviço")
         print("8 - Remover Serviço")
         print("9 - Listar Serviços")
-        print("10 - Voltar ao menu principal")
+        print("10 - Cadastrar Pet")
+        print("11 - Voltar ao menu principal")
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
@@ -49,6 +52,8 @@ def tela_gerente():
         elif opcao == "9":
             servicoController.listar_servicos()
         elif opcao == "10":
+            petController.cadastrar_pet()      
+        elif opcao == "11":
             break
         else:
             print("❌ Opção inválida.")
