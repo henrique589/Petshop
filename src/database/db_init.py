@@ -66,15 +66,14 @@ def criar_tabelas():
         CREATE TABLE IF NOT EXISTS pets (
             id_pet INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
-            nome_dono TEXT NOT NULL,
+            id_dono INTEGER NOT NULL,  
             raca TEXT NOT NULL,
             idade INTEGER NOT NULL,
             peso INTEGER NOT NULL,
             tipo_animal TEXT NOT NULL
+            FOREIGN KEY (id_dono) REFERENCES clientes(id)
         )
-    ''')
-
-   # cursor.execute("DELETE FROM usuarios WHERE email = 'elder@gmail.com'")
+    ''')  #id dono
 
     # Cadastro gerente
     cursor.execute('''
