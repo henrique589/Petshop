@@ -9,8 +9,8 @@ class PetDAO:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO pets (nome, nome_dono, raca, idade, peso, tipo_animal)
+            INSERT INTO pets (nome, id_dono, raca, idade, peso, tipo_animal)
             VALUES (?, ?, ?, ?)
-        ''', (pet.nome,pet.nome_dono, pet.raca, pet.idade, pet.tipo_animal))
+        ''', (pet.nome,pet.id_dono, pet.raca, pet.idade, pet.tipo_animal))
         conn.commit()
         conn.close()
