@@ -8,9 +8,9 @@ class PetController:
         self.petDao = PetDAO()
 
     def cadastrar_pet(self):
-        nome, id_dono, raca, idade, peso, tipo_animal= solicitar_dados_pet()
-        pet= Pet(nome, id_dono, raca, idade, peso, tipo_animal)
+        nome, nome_dono, raca, idade, peso, tipo_animal= solicitar_dados_pet()
+        id_dono = self.petDao.consultar_nome_dono(nome_dono)
+    
+        pet = Pet(nome, id_dono, raca, idade, peso, tipo_animal)
         self.petDao.salvar(pet)
         print(f'Pet cadastrado com sucesso!')
-
-    #fazer classe 

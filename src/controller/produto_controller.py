@@ -12,7 +12,7 @@ class ProdutoController:
 
     def cadastrar_produto(self):
         nome, descricao, preco, estoque = obter_dados_produto()
-        produto = Produto(nome, descricao, preco, estoque)
+        produto = Produto(None, nome, descricao, preco, estoque)
         self.dao.adicionar(produto)
 
     def atualizar_produto(self):

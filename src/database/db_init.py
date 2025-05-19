@@ -61,19 +61,20 @@ def criar_tabelas():
         )
     ''')
 
-    # Tabela pets
+    cursor.execute('DROP TABLE IF EXISTS pets')
+
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS pets (
+        CREATE TABLE pets (
             id_pet INTEGER PRIMARY KEY AUTOINCREMENT,
             nome TEXT NOT NULL,
-            id_dono INTEGER NOT NULL,  
+            id_dono INTEGER NOT NULL,
             raca TEXT NOT NULL,
             idade INTEGER NOT NULL,
             peso INTEGER NOT NULL,
             tipo_animal TEXT NOT NULL,
             FOREIGN KEY (id_dono) REFERENCES clientes(id)
         )
-    ''')  #id dono
+    ''')
 
     # Cadastro gerente
     cursor.execute('''
