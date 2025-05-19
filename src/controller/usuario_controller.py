@@ -9,22 +9,21 @@ class UsuarioController:
     def __init__(self):
         self.usuarioDao = UsuarioDAO()
 
-    def cadastrar_cliente(self):
-        nome, email, senha = solicitar_dados_usuario()
+    def cadastrar_cliente(self, nome, email, senha, telefone, cpf):
         usuario = Usuario(nome, email, senha, tipo='cliente')
         usuario_id = self.usuarioDao.cadastrar_usuario_retornaid(usuario)
-        telefone, cpf = solicitar_dados_cliente()
+
         cliente = Cliente(usuario_id, telefone, cpf)
         clienteDao = ClienteDAO()
         clienteDao.salvar(cliente)
-        print(f'✅ Cadastro realizado com sucesso!')   
 
-    def login_usuario(self):
-        email, senha = solicitar_login()
+        print("✅ Cliente cadastrado com sucesso!")
+
+    def login_usuario(self, email, senha):
         resultado = self.usuarioDao.autenticar_usuario(email, senha)
         if resultado:
-            print(f'✅ Login realizado com sucesso.')
+            print('✅ Login realizado com sucesso.')
             return resultado['tipo']
         else:
-            print(f'❌ Credenciais inválidas.')
+            print('❌ Credenciais inválidas.')
             return None
