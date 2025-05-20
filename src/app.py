@@ -4,6 +4,8 @@ from controller.usuario_controller import UsuarioController
 from controller.pet_controller import PetController
 from controller.servico_controller import ServicoController
 from model.servico import Servico
+from controller.produto_controller import ProdutoController
+from model.produto import Produto
 import os
 
 app = Flask(__name__)
@@ -12,6 +14,7 @@ app.secret_key = 'segredo_super_secreto'
 usuario_controller = UsuarioController()
 pet_controller = PetController()
 servico_controller = ServicoController()
+produto_controller = ProdutoController()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_DIR = os.path.join(BASE_DIR, 'static')
@@ -219,6 +222,67 @@ def painel_servicos():
     if 'usuario' not in session or session['tipo'] != 'gerente':
         return redirect('/')
     return send_file(os.path.join(HTML_DIR, 'painel_servicos.html'))
+
+@app.route('/painel-produtos')
+def painel_produtos():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'painel_produtos.html'))
+
+@app.route('/api/produtos')
+def api_listar_produtos():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    produtos = produto_controller.dao.listar()
+    return [
+        {
+            "id": p.id,
+            "nome": p.nome,
+            "descricao": p.descricao,
+            "preco": p.preco,
+            "estoque": p.estoque
+        }
+        for p in produtos
+    ]
+
+@app.route('/api/produtos', methods=['POST'])
+def api_criar_produto():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    nome = request.form['nome']
+    descricao = request.form['descricao']
+    preco = float(request.form['preco'])
+    estoque = int(request.form['estoque'])
+
+    produto = Produto(nome=nome, descricao=descricao, preco=preco, estoque=estoque)
+    produto_controller.dao.adicionar(produto)
+    return '', 204
+
+@app.route('/api/editar-produto', methods=['POST'])
+def api_editar_produto():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    id_produto = int(request.form['id'])
+    nome = request.form['nome']
+    descricao = request.form['descricao']
+    preco = float(request.form['preco'])
+    estoque = int(request.form['estoque'])
+
+    produto = Produto(id=id_produto, nome=nome, descricao=descricao, preco=preco, estoque=estoque)
+    produto_controller.dao.atualizar(produto)
+    return '', 204
+
+@app.route('/api/excluir-produto', methods=['POST'])
+def api_excluir_produto():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    id_produto = int(request.form['id'])
+    produto_controller.dao.remover(id_produto)
+    return '', 204
 
 
 if __name__ == '__main__':
