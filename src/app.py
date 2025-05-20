@@ -2,6 +2,8 @@ from flask import Flask, request, redirect, url_for, session, send_file
 from sqlite3 import IntegrityError
 from controller.usuario_controller import UsuarioController
 from controller.pet_controller import PetController
+from controller.servico_controller import ServicoController
+from model.servico import Servico
 import os
 
 app = Flask(__name__)
@@ -9,6 +11,7 @@ app.secret_key = 'segredo_super_secreto'
 
 usuario_controller = UsuarioController()
 pet_controller = PetController()
+servico_controller = ServicoController()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_DIR = os.path.join(BASE_DIR, 'static')
@@ -168,6 +171,55 @@ def api_excluir_usuario():
     usuario_id = request.form['id']
     usuario_controller.excluir_usuario(usuario_id)
     return '', 204
+
+@app.route('/api/servicos')
+def api_listar_servicos():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+    return servico_controller.listar_servicos()
+
+@app.route('/api/servicos', methods=['POST'])
+def api_criar_servico():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    nome = request.form['nome']
+    descricao = request.form['descricao']
+    preco = float(request.form['preco'])
+    estoque = int(request.form['estoque'])
+
+    servico_controller.dao.adicionar(Servico(nome=nome, descricao=descricao, preco=preco, estoque=estoque))
+    return '', 204
+
+@app.route('/api/editar-servico', methods=['POST'])
+def api_editar_servico():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    id_servico = int(request.form['id'])
+    nome = request.form['nome']
+    descricao = request.form['descricao']
+    preco = float(request.form['preco'])
+    estoque = int(request.form['estoque'])
+
+    servico_controller.dao.atualizar(Servico(id=id_servico, nome=nome, descricao=descricao, preco=preco, estoque=estoque))
+    return '', 204
+
+@app.route('/api/excluir-servico', methods=['POST'])
+def api_excluir_servico():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    id_servico = int(request.form['id'])
+    servico_controller.dao.remover(id_servico)
+    return '', 204
+
+@app.route('/painel-servicos')
+def painel_servicos():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'painel_servicos.html'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)

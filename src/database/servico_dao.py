@@ -1,9 +1,11 @@
 import sqlite3
 from model.servico import Servico
+import os
 
 class ServicoDAO:
-    def __init__(self, db_path='petshop.db'):
-        self.db_path = db_path
+    def __init__(self):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        self.db_path = os.path.join(base_dir, '..', '..', 'petshop.db')
     
     def adicionar(self, servico: Servico):
         conn = sqlite3.connect(self.db_path)

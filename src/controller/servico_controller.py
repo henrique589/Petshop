@@ -27,4 +27,13 @@ class ServicoController:
 
     def listar_servicos(self):
         servicos = self.dao.listar()
-        mostrar_servicos(servicos)
+        return [
+            {
+                "id": s.id,
+                "nome": s.nome,
+                "descricao": s.descricao,
+                "preco": s.preco,
+                "estoque": s.estoque
+            }
+            for s in servicos
+        ]
