@@ -56,7 +56,7 @@ def criar_tabelas():
         )
     ''')
 
-    cursor.execute('DROP TABLE IF EXISTS pets')
+    #cursor.execute('DROP TABLE IF EXISTS pets')
 
     cursor.execute('''
         CREATE TABLE pets (
