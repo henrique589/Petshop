@@ -37,3 +37,31 @@ class UsuarioDAO:
             return {'nome': resultado[0], 'tipo': resultado[1]}
         else:
             return None
+
+    def listar_todos(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT id, nome, email, tipo FROM usuarios')
+        resultado = cursor.fetchall()
+        conn.close()
+
+        return [
+            {"id": row[0], "nome": row[1], "email": row[2], "tipo": row[3]}
+            for row in resultado
+        ]
+
+    def editar(self, id, nome, email, senha, tipo):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE usuarios SET nome=?, email=?, senha=?, tipo=? WHERE id=?
+        ''', (nome, email, senha, tipo, id))
+        conn.commit()
+        conn.close()
+
+    def excluir(self, id):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM usuarios WHERE id = ?', (id,))
+        conn.commit()
+        conn.close()

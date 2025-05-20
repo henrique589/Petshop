@@ -121,5 +121,53 @@ def api_listar_pets():
     pets = pet_controller.listar_pets_por_email(email)
     return pets
 
+@app.route('/painel-gerente')
+def painel_gerente():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'painel_gerente.html'))
+
+@app.route('/api/usuarios')
+def api_listar_usuarios():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+    return usuario_controller.listar_usuarios()
+
+@app.route('/api/usuarios', methods=['POST'])
+def api_criar_usuario():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    nome = request.form['nome']
+    email = request.form['email']
+    senha = request.form['senha']
+    tipo = request.form['tipo']
+
+    usuario_controller.criar_usuario(nome, email, senha, tipo)
+    return '', 204
+
+@app.route('/api/editar-usuario', methods=['POST'])
+def api_editar_usuario():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    usuario_id = request.form['id']
+    nome = request.form['nome']
+    email = request.form['email']
+    senha = request.form['senha']
+    tipo = request.form['tipo']
+
+    usuario_controller.editar_usuario(usuario_id, nome, email, senha, tipo)
+    return '', 204
+
+@app.route('/api/excluir-usuario', methods=['POST'])
+def api_excluir_usuario():
+    if 'usuario' not in session or session['tipo'] != 'gerente':
+        return {"erro": "Não autorizado"}, 401
+
+    usuario_id = request.form['id']
+    usuario_controller.excluir_usuario(usuario_id)
+    return '', 204
+
 if __name__ == '__main__':
     app.run(debug=True)

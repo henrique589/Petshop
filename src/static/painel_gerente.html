@@ -1,0 +1,101 @@
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel do Gerente</title>
+  <style>
+    .card { border: 1px solid #ccc; padding: 12px; margin: 12px; border-radius: 8px; }
+    .input-group { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h2>Gerenciar Usuários</h2>
+
+  <div id="usuarios"></div>
+
+  <hr>
+  <h3 id="form-title">Adicionar Novo Usuário</h3>
+  <form id="form-usuario">
+    <input type="hidden" name="id" id="id">
+    <div class="input-group">
+      <input type="text" name="nome" placeholder="Nome" required>
+    </div>
+    <div class="input-group">
+      <input type="email" name="email" placeholder="Email" required>
+    </div>
+    <div class="input-group">
+      <input type="password" name="senha" placeholder="Senha" required>
+    </div>
+    <div class="input-group">
+      <select name="tipo" required>
+        <option value="cliente">Cliente</option>
+        <option value="funcionario">Funcionário</option>
+        <option value="gerente">Gerente</option>
+      </select>
+    </div>
+    <button type="submit">Salvar</button>
+    <button type="button" onclick="cancelarEdicao()">Cancelar</button>
+  </form>
+
+  <p><a href="/logout">Sair</a></p>
+
+  <script>
+    function carregarUsuarios() {
+      fetch('/api/usuarios')
+        .then(res => res.json())
+        .then(usuarios => {
+          const div = document.getElementById('usuarios');
+          div.innerHTML = '';
+
+          usuarios.forEach(u => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+              <strong>Nome:</strong> ${u.nome}<br>
+              <strong>Email:</strong> ${u.email}<br>
+              <strong>Tipo:</strong> ${u.tipo}<br>
+              <button onclick='editar(${JSON.stringify(u)})'>Editar</button>
+              <button onclick='excluir(${u.id})'>Excluir</button>
+            `;
+            div.appendChild(card);
+          });
+        });
+    }
+
+    function editar(u) {
+      document.getElementById('form-title').innerText = 'Editar Usuário';
+      document.getElementById('id').value = u.id;
+      document.querySelector('[name="nome"]').value = u.nome;
+      document.querySelector('[name="email"]').value = u.email;
+      document.querySelector('[name="senha"]').value = '';
+      document.querySelector('[name="tipo"]').value = u.tipo;
+    }
+
+    function cancelarEdicao() {
+      document.getElementById('form-title').innerText = 'Adicionar Novo Usuário';
+      document.getElementById('form-usuario').reset();
+      document.getElementById('id').value = '';
+    }
+
+    function excluir(id) {
+      if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+      const formData = new FormData();
+      formData.append('id', id);
+      fetch('/api/excluir-usuario', { method: 'POST', body: formData })
+        .then(() => carregarUsuarios());
+    }
+
+    document.getElementById('form-usuario').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const rota = formData.get('id') ? '/api/editar-usuario' : '/api/usuarios';
+      fetch(rota, { method: 'POST', body: formData })
+        .then(() => {
+          cancelarEdicao();
+          carregarUsuarios();
+        });
+    });
+
+    carregarUsuarios();
+  </script>
+</body>
+</html>

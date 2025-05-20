@@ -27,3 +27,15 @@ class UsuarioController:
         else:
             print('❌ Credenciais inválidas.')
             return None
+    def listar_usuarios(self):
+        return self.usuarioDao.listar_todos()
+
+    def criar_usuario(self, nome, email, senha, tipo):
+        usuario = Usuario(nome, email, senha, tipo)
+        self.usuarioDao.salvar(usuario)
+
+    def editar_usuario(self, id, nome, email, senha, tipo):
+        self.usuarioDao.editar(id, nome, email, senha, tipo)
+
+    def excluir_usuario(self, id):
+        self.usuarioDao.excluir(id)
