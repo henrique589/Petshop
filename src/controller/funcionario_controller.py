@@ -2,8 +2,7 @@ from model.usuario import Usuario
 from model.funcionario import Funcionario
 from database.usuario_dao import UsuarioDAO
 from database.funcionario_dao import FuncionarioDAO
-from view.usuario_view import solicitar_dados_usuario
-from view.funcionario_view import solicitar_dados_funcionario
+
 
 class FuncionarioController:
     def __init__(self):

@@ -1,10 +1,6 @@
 from model.produto import Produto
 from database.produto_dao import ProdutoDAO
-from view.produto_view import (
-    obter_dados_produto,
-    obter_id_produto,
-    mostrar_produtos
-) 
+
 
 class ProdutoController:
     def __init__(self):

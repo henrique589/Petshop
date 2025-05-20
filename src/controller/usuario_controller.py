@@ -2,8 +2,6 @@ from model.usuario import Usuario
 from model.cliente import Cliente
 from database.usuario_dao import UsuarioDAO
 from database.cliente_dao import ClienteDAO
-from view.usuario_view import solicitar_dados_usuario, solicitar_login
-from view.cliente_view import solicitar_dados_cliente
 
 class UsuarioController:
     def __init__(self):
@@ -32,7 +30,20 @@ class UsuarioController:
 
     def criar_usuario(self, nome, email, senha, tipo):
         usuario = Usuario(nome, email, senha, tipo)
-        self.usuarioDao.salvar(usuario)
+        usuario_id = self.usuarioDao.cadastrar_usuario_retornaid(usuario)
+
+        if tipo == 'cliente':
+            from model.cliente import Cliente
+            from database.cliente_dao import ClienteDAO
+            cliente = Cliente(usuario_id, telefone="", cpf="")
+            ClienteDAO().salvar(cliente)
+
+        elif tipo == 'funcionario':
+            from model.funcionario import Funcionario
+            from database.funcionario_dao import FuncionarioDAO
+            funcionario = Funcionario(usuario_id, cargo="Não informado")
+            FuncionarioDAO().adicionar(funcionario)
+
 
     def editar_usuario(self, id, nome, email, senha, tipo):
         self.usuarioDao.editar(id, nome, email, senha, tipo)

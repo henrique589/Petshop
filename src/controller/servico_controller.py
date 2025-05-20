@@ -1,10 +1,6 @@
 from model.servico import Servico
 from database.servico_dao import ServicoDAO
-from view.servico_view import (
-    obter_dados_servico,
-    obter_id_servico,
-    mostrar_servicos
-)
+
 
 class ServicoController:
     def __init__(self):
