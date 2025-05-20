@@ -28,21 +28,17 @@ class PetDAO:
             JOIN usuarios u ON u.id = c.usuario_id
             WHERE u.email = ?
         ''', (email,))
-        
+
         resultado = cursor.fetchone()
         conn.close()
-
-        if resultado:
-            return resultado[0]
-        else:
-            return None
+        return resultado[0] if resultado else None
 
     def listar_pets_por_email(self, email):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
         cursor.execute('''
-            SELECT p.nome, p.raca, p.idade, p.peso, p.tipo_animal
+            SELECT p.id_pet, p.nome, p.raca, p.idade, p.peso, p.tipo_animal
             FROM pets p
             JOIN clientes c ON c.id = p.id_dono
             JOIN usuarios u ON u.id = c.usuario_id
@@ -54,11 +50,30 @@ class PetDAO:
 
         return [
             {
-                "nome": row[0],
-                "raca": row[1],
-                "idade": row[2],
-                "peso": row[3],
-                "tipo_animal": row[4]
+                "id_pet": row[0],
+                "nome": row[1],
+                "raca": row[2],
+                "idade": row[3],
+                "peso": row[4],
+                "tipo_animal": row[5]
             }
             for row in pets
         ]
+
+    def editar_pet(self, id_pet, nome, raca, idade, peso, tipo_animal):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE pets
+            SET nome = ?, raca = ?, idade = ?, peso = ?, tipo_animal = ?
+            WHERE id_pet = ?
+        ''', (nome, raca, idade, peso, tipo_animal, id_pet))
+        conn.commit()
+        conn.close()
+
+    def excluir_pet(self, id_pet):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM pets WHERE id_pet = ?', (id_pet,))
+        conn.commit()
+        conn.close()
