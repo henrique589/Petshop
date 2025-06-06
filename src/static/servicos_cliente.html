@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Serviços</title>
+    <style>
+        .card {
+            border: 1px solid #ccc;
+            padding: 12px;
+            margin: 12px;
+            border-radius: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 8px;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Lista de Serviços</h2>
+    <div id="lista-servicos"></div>
+    <script>
+        function carregarServicos() {
+            fetch('/api/servicos')
+                .then(res => res.json())
+                .then(servicos => {
+                    const div = document.getElementById('lista-servicos');
+                    div.innerHTML = '';
+                    servicos.forEach(s => {
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <strong>Nome:</strong> ${s.nome}<br>
+                            <strong>Descrição:</strong> ${s.descricao}<br>
+                            <strong>Preço:</strong> R$ ${s.preco.toFixed(2)}<br>
+                            <strong>Estoque:</strong> ${s.estoque}<br>
+                        `;
+                        div.appendChild(card);
+                    });
+                });
+        }
+
+        carregarServicos();
+    </script>
+
+    <a href="/perfil" class="back-link">Voltar ao Perfil</a>
+</body>
+
+</html>
