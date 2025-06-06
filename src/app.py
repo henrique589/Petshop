@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, session, send_file, render_template
+from flask import Flask, request, redirect, url_for, session, send_file
 from sqlite3 import IntegrityError
 from controller.usuario_controller import UsuarioController
 from controller.pet_controller import PetController
@@ -195,7 +195,7 @@ def api_excluir_usuario():
 
 @app.route('/api/servicos')
 def api_listar_servicos():
-    # Permitir o cliente a listar os serviços também
+    # MODIFICAÇÃO: Permitir o cliente a listar os serviços também:
     if 'usuario' not in session or session.get('tipo') not in ['gerente', 'cliente']:
         return {"erro": "Não autorizado"}, 403
 
