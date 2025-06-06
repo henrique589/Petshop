@@ -6,6 +6,7 @@ from database.cliente_dao import ClienteDAO
 class UsuarioController:
     def __init__(self):
         self.usuarioDao = UsuarioDAO()
+        self.cliente_dao = ClienteDAO()
 
     def cadastrar_cliente(self, nome, email, senha, telefone, cpf):
         usuario = Usuario(nome, email, senha, tipo='cliente')
@@ -50,3 +51,31 @@ class UsuarioController:
 
     def excluir_usuario(self, id):
         self.usuarioDao.excluir(id)
+
+    def buscar_clientes_e_pets(self, termo):
+        if not termo:
+            return []
+        
+        dados = self.cliente_dao.buscar_por_nome_ou_cpf(termo)
+
+        # Agrupar pets por cliente para uma estrutura de dados mais limpa
+        clientes_agrupados = {}
+        for item in dados:
+            cpf = item['cpf_cliente']
+            if cpf not in clientes_agrupados:
+                clientes_agrupados[cpf] = {
+                    "nome_cliente": item['nome_cliente'],
+                    "contato_cliente": item['contato_cliente'],
+                    "cpf_cliente": item['cpf_cliente'],
+                    "pets": []
+                }
+            
+            if item['nome_pet']: # Adiciona o pet apenas se ele existir
+                clientes_agrupados[cpf]['pets'].append({
+                    "nome_pet": item['nome_pet'],
+                    "raca_pet": item['raca_pet'],
+                    "idade_pet": item['idade_pet'],
+                    "tipo_animal_pet": item['tipo_animal_pet']
+                })
+        
+        return list(clientes_agrupados.values())

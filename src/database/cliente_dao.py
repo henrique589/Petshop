@@ -19,3 +19,39 @@ class ClienteDAO:
 
         conn.commit()
         conn.close()
+
+    def buscar_por_nome_ou_cpf(self, termo_busca):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        query = """
+            SELECT
+                u.nome AS nome_cliente,
+                c.telefone AS contato_cliente,
+                c.cpf AS cpf_cliente,
+                p.nome AS nome_pet,
+                p.raca AS raca_pet,
+                p.idade AS idade_pet,
+                p.tipo_animal AS tipo_animal_pet
+            FROM usuarios u
+            JOIN clientes c ON u.id = c.usuario_id
+            LEFT JOIN pets p ON c.id = p.id_dono
+            WHERE u.nome LIKE ? OR c.cpf = ?
+            ORDER BY u.nome;
+        """
+        
+        # O termo para o LIKE precisa dos caracteres '%' para funcionar como "contém"
+        termo_like = f'%{termo_busca}%'
+        
+        cursor.execute(query, (termo_like, termo_busca))
+        
+        resultados = cursor.fetchall()
+        conn.close()
+
+        clientes_e_pets = []
+        if resultados:
+            colunas = [description[0] for description in cursor.description]
+            for linha in resultados:
+                clientes_e_pets.append(dict(zip(colunas, linha)))
+
+        return clientes_e_pets

@@ -127,6 +127,30 @@ def api_listar_pets():
     pets = pet_controller.listar_pets_por_email(email)
     return pets
 
+@app.route('/painel-funcionario')
+def painel_funcionario():
+    # Esta verificação garante que o usuário está logado E que seu tipo
+    # é 'funcionario' ou 'gerente'. Se não for, ele é enviado para a página de login.
+    if 'usuario' not in session or session.get('tipo') not in ['funcionario', 'gerente']:
+        return redirect(url_for('index'))
+    
+    # Se a verificação passar, a página do painel é enviada.
+    return send_file(os.path.join(HTML_DIR, 'painel_funcionario.html'))
+
+@app.route('/api/buscar-clientes')
+def api_buscar_clientes():
+    # Protege a rota, permitindo acesso apenas para funcionários e gerentes
+    if 'usuario' not in session or session.get('tipo') not in ['funcionario', 'gerente']:
+        return {"erro": "Não autorizado"}, 403
+    
+    termo_busca = request.args.get('termo')
+    if not termo_busca:
+        return {"erro": "Termo de busca não fornecido"}, 400
+
+    # Esta linha chama o método que você deve ter adicionado ao UsuarioController
+    clientes = usuario_controller.buscar_clientes_e_pets(termo_busca)
+    return clientes
+
 @app.route('/painel-gerente')
 def painel_gerente():
     if 'usuario' not in session or session['tipo'] != 'gerente':

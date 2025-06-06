@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Atendente - Busca de Clientes</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f9; }
+        h1, h2 { color: #333; }
+        .search-container { margin-bottom: 2em; }
+        input[type="text"] { padding: 10px; width: 300px; border-radius: 5px; border: 1px solid #ccc; }
+        button { padding: 10px 15px; border: none; background-color: #007bff; color: white; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .results-container { margin-top: 1em; }
+        .cliente-card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1em; margin-bottom: 1em; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .cliente-card h2 { margin-top: 0; }
+        .pet-info { margin-left: 20px; border-left: 3px solid #007bff; padding-left: 15px; }
+        #logout { position: absolute; top: 15px; right: 15px; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <a id="logout" href="/logout">Sair</a>
+
+    <h1>Painel do Atendente</h1>
+    <p>Busque clientes por nome ou CPF para visualizar seus dados e de seus pets.</p>
+
+    <div class="search-container">
+        <form id="search-form">
+            <input type="text" id="search-term" name="termo" placeholder="Digite o nome ou CPF do cliente" required>
+            <button type="submit">Buscar</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <div id="results-container" class="results-container">
+        </div>
+
+    <script>
+        document.getElementById('search-form').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Impede o recarregamento da página
+
+            const termo = document.getElementById('search-term').value;
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '<p>Buscando...</p>';
+
+            try {
+                const response = await fetch(`/api/buscar-clientes?termo=${encodeURIComponent(termo)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro na busca: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.length === 0) {
+                    resultsContainer.innerHTML = '<p>Nenhum cliente encontrado.</p>';
+                    return;
+                }
+
+                resultsContainer.innerHTML = ''; 
+                
+                data.forEach(cliente => {
+                    const clienteCard = document.createElement('div');
+                    clienteCard.className = 'cliente-card';
+                    
+                    let petsHtml = '<h4>Pets:</h4>';
+                    if (cliente.pets.length > 0) {
+                        cliente.pets.forEach(pet => {
+                            petsHtml += `
+                                <div class="pet-info">
+                                    <p><strong>Nome do Pet:</strong> ${pet.nome_pet}</p>
+                                    <p><strong>Raça:</strong> ${pet.raca_pet} | <strong>Idade:</strong> ${pet.idade_pet} anos | <strong>Tipo:</strong> ${pet.tipo_animal_pet}</p>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        petsHtml += '<p>Nenhum pet cadastrado.</p>';
+                    }
+
+                    clienteCard.innerHTML = `
+                        <h2>${cliente.nome_cliente}</h2>
+                        <p><strong>CPF:</strong> ${cliente.cpf_cliente}</p>
+                        <p><strong>Contato:</strong> ${cliente.contato_cliente}</p>
+                        ${petsHtml}
+                    `;
+                    resultsContainer.appendChild(clienteCard);
+                });
+
+            } catch (error) {
+                resultsContainer.innerHTML = `<p style="color: red;">${error.message}</p>`;
+                console.error('Falha ao buscar clientes:', error);
+            }
+        });
+    </script>
+
+</body>
+</html>
