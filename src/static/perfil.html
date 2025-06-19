@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <title>Perfil do Cliente</title>
@@ -9,11 +10,25 @@
       padding: 12px;
       margin: 12px;
       border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-links {
+      margin-top: 20px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+
+    .nav-links a {
+      margin-right: 15px;
     }
   </style>
 </head>
+
 <body>
+  <div class="nav-links">
+    <a href="/servicos-cliente">Consultar Serviços Oferecidos</a>
+  </div>
   <h2>Seus Pets</h2>
   <div id="lista-pets"></div>
 
@@ -90,7 +105,7 @@
       }).then(() => carregarPets());
     }
 
-    document.getElementById('form-pet').addEventListener('submit', function(e) {
+    document.getElementById('form-pet').addEventListener('submit', function (e) {
       e.preventDefault();
       const formData = new FormData(this);
       const rota = formData.get('id_pet') ? '/editar-pet' : '/cadastro-pet';
@@ -107,4 +122,5 @@
     carregarPets();
   </script>
 </body>
+
 </html>
