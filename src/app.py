@@ -6,6 +6,8 @@ from controller.servico_controller import ServicoController
 from model.servico import Servico
 from controller.produto_controller import ProdutoController
 from model.produto import Produto
+from controller.cliente_controller import ClienteController
+from database.cliente_dao import ClienteDAO
 import os
 
 app = Flask(__name__)
@@ -15,6 +17,8 @@ usuario_controller = UsuarioController()
 pet_controller = PetController()
 servico_controller = ServicoController()
 produto_controller = ProdutoController()
+cliente_dao = ClienteDAO()
+cliente_controller = ClienteController()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_DIR = os.path.join(BASE_DIR, 'static')
