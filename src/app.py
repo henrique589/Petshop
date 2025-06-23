@@ -344,7 +344,6 @@ def api_excluir_produto():
     id_produto = int(request.form['id'])
     produto_controller.dao.remover(id_produto)
     return '', 204
-  
 
 @app.route('/api/agendamentos', methods=['POST'])
 def api_agendar_servico():
@@ -355,32 +354,13 @@ def api_agendar_servico():
     if not cliente_id:
         return {"erro": "Cliente não encontrado"}, 404
 
+    pet_id = int(request.form['pet_id'])  
     servico_id = int(request.form['servico_id'])
     data = request.form['data']
     hora = request.form['hora']
 
-    cliente_controller.agendar_servico_web(cliente_id, servico_id, data, hora)
+    cliente_controller.agendar_servico_web(cliente_id, pet_id, servico_id, data, hora)
     return '', 204
-
-@app.route('/api/agendamentos')
-def api_listar_agendamentos():
-    if 'usuario' not in session or session['tipo'] != 'cliente':
-        return {"erro": "Não autorizado"}, 401
-
-    cliente_id = get_cliente_id()
-    if not cliente_id:
-        return {"erro": "Cliente não encontrado"}, 404
-
-    agendamentos = cliente_controller.agendamentoDao.listar_por_cliente(cliente_id)
-    return [
-        {
-            "id": ag.id,
-            "servico_id": ag.servico_id,
-            "data": ag.data,
-            "hora": ag.hora
-        }
-        for ag in agendamentos
-    ]
 
 @app.route('/api/excluir-agendamento', methods=['POST'])
 def api_excluir_agendamento():
@@ -391,13 +371,28 @@ def api_excluir_agendamento():
     cliente_controller.agendamentoDao.remover(agendamento_id)
     return '', 204
 
-
-
 @app.route('/servicos-cliente')
 def servicos_cliente():
     if 'usuario' not in session or session.get('tipo') != 'cliente':
         return redirect('/')
     return send_file(os.path.join(HTML_DIR, 'servicos_cliente.html'))
+
+@app.route('/api/agendamentos-todos')
+def api_listar_agendamentos_todos():
+    if 'usuario' not in session or session['tipo'] not in ['funcionario', 'gerente']:
+        return {"erro": "Não autorizado"}, 403
+
+    data = request.args.get('data')  # filtro opcional
+    return cliente_controller.agendamentoDao.listar_todos_com_detalhes(data)
+
+@app.route('/api/agendamentos/detalhes')
+def api_agendamentos_detalhados():
+    if 'usuario' not in session or session['tipo'] != 'funcionario':
+        return {"erro": "Acesso não autorizado"}, 403
+
+    data = request.args.get('data') 
+    agendamentos = cliente_controller.agendamentoDao.listar_todos_com_detalhes(data)
+    return agendamentos  
 
 
 if __name__ == '__main__':
