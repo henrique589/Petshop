@@ -6,6 +6,8 @@ from controller.servico_controller import ServicoController
 from model.servico import Servico
 from controller.produto_controller import ProdutoController
 from model.produto import Produto
+from controller.cliente_controller import ClienteController
+from database.cliente_dao import ClienteDAO
 import os
 
 app = Flask(__name__)
@@ -15,10 +17,18 @@ usuario_controller = UsuarioController()
 pet_controller = PetController()
 servico_controller = ServicoController()
 produto_controller = ProdutoController()
+cliente_dao = ClienteDAO()
+cliente_controller = ClienteController()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_DIR = os.path.join(BASE_DIR, 'static')
 
+
+def get_cliente_id():
+    email = session.get('usuario')
+    if not email:
+        return None
+    return cliente_dao.get_id_por_email(email)
 
 @app.route('/')
 def index():
@@ -335,12 +345,54 @@ def api_excluir_produto():
     produto_controller.dao.remover(id_produto)
     return '', 204
 
+@app.route('/api/agendamentos', methods=['POST'])
+def api_agendar_servico():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return {"erro": "Não autorizado"}, 401
+
+    cliente_id = get_cliente_id()
+    if not cliente_id:
+        return {"erro": "Cliente não encontrado"}, 404
+
+    pet_id = int(request.form['pet_id'])  
+    servico_id = int(request.form['servico_id'])
+    data = request.form['data']
+    hora = request.form['hora']
+
+    cliente_controller.agendar_servico_web(cliente_id, pet_id, servico_id, data, hora)
+    return '', 204
+
+@app.route('/api/excluir-agendamento', methods=['POST'])
+def api_excluir_agendamento():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return {"erro": "Não autorizado"}, 401
+
+    agendamento_id = int(request.form['id'])
+    cliente_controller.agendamentoDao.remover(agendamento_id)
+    return '', 204
 
 @app.route('/servicos-cliente')
 def servicos_cliente():
     if 'usuario' not in session or session.get('tipo') != 'cliente':
         return redirect('/')
     return send_file(os.path.join(HTML_DIR, 'servicos_cliente.html'))
+
+@app.route('/api/agendamentos-todos')
+def api_listar_agendamentos_todos():
+    if 'usuario' not in session or session['tipo'] not in ['funcionario', 'gerente']:
+        return {"erro": "Não autorizado"}, 403
+
+    data = request.args.get('data')  # filtro opcional
+    return cliente_controller.agendamentoDao.listar_todos_com_detalhes(data)
+
+@app.route('/api/agendamentos/detalhes')
+def api_agendamentos_detalhados():
+    if 'usuario' not in session or session['tipo'] != 'funcionario':
+        return {"erro": "Acesso não autorizado"}, 403
+
+    data = request.args.get('data') 
+    agendamentos = cliente_controller.agendamentoDao.listar_todos_com_detalhes(data)
+    return agendamentos  
 
 
 if __name__ == '__main__':

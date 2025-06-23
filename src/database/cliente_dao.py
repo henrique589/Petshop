@@ -55,3 +55,16 @@ class ClienteDAO:
                 clientes_e_pets.append(dict(zip(colunas, linha)))
 
         return clientes_e_pets
+    
+    def get_id_por_email(self, email):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT c.id
+            FROM clientes c
+            JOIN usuarios u ON c.usuario_id = u.id
+            WHERE u.email = ?
+        ''', (email,))
+        resultado = cursor.fetchone()
+        conn.close()
+        return resultado[0] if resultado else None

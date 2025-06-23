@@ -51,6 +51,59 @@
         carregarServicos();
     </script>
 
+    <h3>Agendar Serviço</h3>
+    <form id="form-agendamento">
+        <select name="pet_id" id="pet_id" required></select><br>
+        <select name="servico_id" id="servico_id" required></select><br>
+        <input type="date" name="data" required><br>
+        <input type="time" name="hora" required><br>
+        <button type="submit">Agendar</button>
+    </form>
+
+    <script>
+        async function carregarPets() {
+            const res = await fetch('/api/pets');
+            const pets = await res.json();
+            const select = document.getElementById('pet_id');
+            pets.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id_pet;
+                opt.textContent = p.nome + " (" + p.raca + ")";
+                select.appendChild(opt);
+            });
+        }
+
+        async function carregarServicosAgendamento() {
+            const res = await fetch('/api/servicos');
+            const servicos = await res.json();
+            const select = document.getElementById('servico_id');
+            servicos.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.nome + " - R$ " + s.preco.toFixed(2);
+                select.appendChild(opt);
+            });
+        }
+
+        document.getElementById('form-agendamento').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const res = await fetch('/api/agendamentos', {
+                method: 'POST',
+                body: formData
+            });
+            if (res.ok) {
+                alert("✅ Agendamento realizado com sucesso!");
+                this.reset();
+            } else {
+                alert("❌ Erro ao agendar.");
+            }
+        });
+
+        carregarPets();
+        carregarServicosAgendamento();
+    </script>
+
     <a href="/perfil" class="back-link">Voltar ao Perfil</a>
 </body>
 
