@@ -23,6 +23,7 @@ class ClienteController:
         for ag in agendamentos:
             print(f"ID: {ag.id} | Serviço: {ag.servico_id} | Data: {ag.data} | Hora: {ag.hora}")
 
-def agendar_servico_web(self, cliente_id, servico_id, data, hora):
-    agendamento = Agendamento(cliente_id=cliente_id, servico_id=servico_id, data=data, hora=hora)
-    self.agendamentoDao.agendar(agendamento)
+    def agendar_servico_web(self, cliente_id, pet_id, servico_id, data, hora):
+        agendamento = Agendamento(cliente_id=cliente_id, pet_id=pet_id, servico_id=servico_id, data=data, hora=hora)
+        self.agendamentoDao.agendar(agendamento)
+

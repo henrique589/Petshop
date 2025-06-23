@@ -16,6 +16,7 @@
         .cliente-card h2 { margin-top: 0; }
         .pet-info { margin-left: 20px; border-left: 3px solid #007bff; padding-left: 15px; }
         #logout { position: absolute; top: 15px; right: 15px; text-decoration: none; }
+        .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1em; margin-top: 1em; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
     </style>
 </head>
 <body>
@@ -31,6 +32,48 @@
             <button type="submit">Buscar</button>
         </form>
     </div>
+
+    <h2>Agendamentos</h2>
+        <label for="filtro-data">Filtrar por data:</label>
+        <input type="date" id="filtro-data">
+        <button onclick="carregarAgendamentos()">Filtrar</button>
+
+        <div id="agendamentos"></div>
+
+        <script>
+            async function carregarAgendamentos() {
+                const data = document.getElementById('filtro-data').value;
+                let url = '/api/agendamentos/detalhes';
+                if (data) {
+                    url += `?data=${data}`;
+                }
+
+                const res = await fetch(url);
+                const agendamentos = await res.json();
+                const container = document.getElementById('agendamentos');
+                container.innerHTML = '';
+
+                if (agendamentos.length === 0) {
+                container.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+                return;
+                }
+
+                agendamentos.forEach(ag => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <strong>Data:</strong> ${ag.data}<br>
+                    <strong>Hora:</strong> ${ag.hora}<br>
+                    <strong>Pet:</strong> ${ag.nome_pet}<br>
+                    <strong>Cliente:</strong> ${ag.nome_cliente}<br>
+                    <strong>Serviço:</strong> ${ag.nome_servico}<br>
+                    <hr>
+                `;
+                container.appendChild(card);
+                });
+            }
+            window.onload = carregarAgendamentos;
+        </script>
 
     <hr>
 

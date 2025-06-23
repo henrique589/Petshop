@@ -1,0 +1,30 @@
+<input type="date" id="filtro-data">
+<button onclick="carregarAgendamentos()">Filtrar</button>
+
+<div id="resultado"></div>
+
+<script>
+  function carregarAgendamentos() {
+    const data = document.getElementById("filtro-data").value;
+    const url = data ? `/api/agendamentos-todos?data=${data}` : '/api/agendamentos-todos';
+
+    fetch(url)
+      .then(res => res.json())
+      .then(lista => {
+        const div = document.getElementById("resultado");
+        div.innerHTML = '';
+        lista.forEach(a => {
+          div.innerHTML += `
+            <div class="card">
+              <strong>Cliente:</strong> ${a.nome_cliente}<br>
+              <strong>Pet:</strong> ${a.nome_pet}<br>
+              <strong>Serviço:</strong> ${a.nome_servico}<br>
+              <strong>Data:</strong> ${a.data} às ${a.hora}
+            </div>
+          `;
+        });
+      });
+  }
+
+  carregarAgendamentos();  // auto-load
+</script>
