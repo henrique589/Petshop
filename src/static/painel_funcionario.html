@@ -8,7 +8,7 @@
         body { font-family: sans-serif; margin: 2em; background-color: #f4f4f9; }
         h1, h2 { color: #333; }
         .search-container { margin-bottom: 2em; }
-        input[type="text"] { padding: 10px; width: 300px; border-radius: 5px; border: 1px solid #ccc; }
+        input[type="text"], input[type="date"] { padding: 10px; width: 300px; border-radius: 5px; border: 1px solid #ccc; }
         button { padding: 10px 15px; border: none; background-color: #007bff; color: white; border-radius: 5px; cursor: pointer; }
         button:hover { background-color: #0056b3; }
         .results-container { margin-top: 1em; }
@@ -17,6 +17,8 @@
         .pet-info { margin-left: 20px; border-left: 3px solid #007bff; padding-left: 15px; }
         #logout { position: absolute; top: 15px; right: 15px; text-decoration: none; }
         .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1em; margin-top: 1em; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+        .excluir-btn { background-color: #dc3545; margin-top: 10px; }
+        .excluir-btn:hover { background-color: #a71d2a; }
     </style>
 </head>
 <body>
@@ -34,31 +36,31 @@
     </div>
 
     <h2>Agendamentos</h2>
-        <label for="filtro-data">Filtrar por data:</label>
-        <input type="date" id="filtro-data">
-        <button onclick="carregarAgendamentos()">Filtrar</button>
+    <label for="filtro-data">Filtrar por data:</label>
+    <input type="date" id="filtro-data">
+    <button onclick="carregarAgendamentos()">Filtrar</button>
 
-        <div id="agendamentos"></div>
+    <div id="agendamentos"></div>
 
-        <script>
-            async function carregarAgendamentos() {
-                const data = document.getElementById('filtro-data').value;
-                let url = '/api/agendamentos/detalhes';
-                if (data) {
-                    url += `?data=${data}`;
-                }
+    <script>
+        async function carregarAgendamentos() {
+            const data = document.getElementById('filtro-data').value;
+            let url = '/api/agendamentos/detalhes';
+            if (data) {
+                url += `?data=${data}`;
+            }
 
-                const res = await fetch(url);
-                const agendamentos = await res.json();
-                const container = document.getElementById('agendamentos');
-                container.innerHTML = '';
+            const res = await fetch(url);
+            const agendamentos = await res.json();
+            const container = document.getElementById('agendamentos');
+            container.innerHTML = '';
 
-                if (agendamentos.length === 0) {
+            if (agendamentos.length === 0) {
                 container.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
                 return;
-                }
+            }
 
-                agendamentos.forEach(ag => {
+            agendamentos.forEach(ag => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
@@ -67,22 +69,47 @@
                     <strong>Pet:</strong> ${ag.nome_pet}<br>
                     <strong>Cliente:</strong> ${ag.nome_cliente}<br>
                     <strong>Serviço:</strong> ${ag.nome_servico}<br>
+                    <button class="excluir-btn" data-id="${ag.id}">Excluir</button>
                     <hr>
                 `;
                 container.appendChild(card);
+            });
+
+            document.querySelectorAll('.excluir-btn').forEach(button => {
+                button.addEventListener('click', async function () {
+                    const confirmacao = confirm("Deseja realmente excluir este agendamento?");
+                    if (!confirmacao) return;
+
+                    const id = this.getAttribute('data-id');
+                    const formData = new FormData();
+                    formData.append('id', id);
+
+                    const res = await fetch('/api/excluir-agendamento', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: "include"
+                    });
+
+                    if (res.ok) {
+                        alert('Agendamento excluído com sucesso!');
+                        carregarAgendamentos();
+                    } else {
+                        alert('Erro ao excluir agendamento.');
+                    }
                 });
-            }
-            window.onload = carregarAgendamentos;
-        </script>
+            });
+        }
+
+        window.onload = carregarAgendamentos;
+    </script>
 
     <hr>
 
-    <div id="results-container" class="results-container">
-        </div>
+    <div id="results-container" class="results-container"></div>
 
     <script>
         document.getElementById('search-form').addEventListener('submit', async function(event) {
-            event.preventDefault(); // Impede o recarregamento da página
+            event.preventDefault();
 
             const termo = document.getElementById('search-term').value;
             const resultsContainer = document.getElementById('results-container');
@@ -90,7 +117,7 @@
 
             try {
                 const response = await fetch(`/api/buscar-clientes?termo=${encodeURIComponent(termo)}`);
-                
+
                 if (!response.ok) {
                     throw new Error(`Erro na busca: ${response.statusText}`);
                 }
@@ -102,12 +129,12 @@
                     return;
                 }
 
-                resultsContainer.innerHTML = ''; 
-                
+                resultsContainer.innerHTML = '';
+
                 data.forEach(cliente => {
                     const clienteCard = document.createElement('div');
                     clienteCard.className = 'cliente-card';
-                    
+
                     let petsHtml = '<h4>Pets:</h4>';
                     if (cliente.pets.length > 0) {
                         cliente.pets.forEach(pet => {

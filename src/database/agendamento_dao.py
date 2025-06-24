@@ -17,6 +17,33 @@ class AgendamentoDAO:
         conn.commit()
         conn.close()
 
+    def listar_por_data(self, data):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+                       SELECT id, cliente_id, pet_id, servico_id, data, hora FROM agendamentos WHERE data = ?
+                       ''', (data,))
+        rows = cursor.fetchall()
+        agendamentos = []
+        for row in rows:
+            ag = Agendamento(*row)
+            agendamentos.append(ag)
+        conn.close()
+        return agendamentos
+
+    
+    def existe_agendamento_em(self, data, hora):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT COUNT(*) FROM agendamentos
+            WHERE data = ? AND hora = ?
+        ''', (data, hora))
+        count = cursor.fetchone()[0]
+        conn.close()
+        return count > 0
+
+
     def listar_por_cliente(self, cliente_id: int):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -45,7 +72,7 @@ class AgendamentoDAO:
         cursor = conn.cursor()
 
         query = '''
-            SELECT a.data, a.hora,
+            SELECT a.id, a.data, a.hora,
                 p.nome AS nome_pet,
                 u.nome AS nome_cliente,
                 s.nome AS nome_servico
@@ -56,6 +83,7 @@ class AgendamentoDAO:
             JOIN pets p ON p.id_pet = a.pet_id
             WHERE 1 = 1
         '''
+
 
         params = []
         if data:
@@ -70,10 +98,12 @@ class AgendamentoDAO:
 
         return [
             {
-                "data": row[0],
-                "hora": row[1],
-                "nome_pet": row[2],
-                "nome_cliente": row[3],
-                "nome_servico": row[4]
+                "id": row[0],
+                "data": row[1],
+                "hora": row[2],
+                "nome_pet": row[3],
+                "nome_cliente": row[4],
+                "nome_servico": row[5]
             } for row in agendamentos
         ]
+
