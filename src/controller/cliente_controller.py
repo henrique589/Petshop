@@ -32,10 +32,18 @@ class ClienteController:
         hora = datetime.strptime(hora_str, '%H:%M').time()
         datetime_agendamento = datetime.combine(data, hora)
 
-        # Buscar agendamentos já marcados na mesma data
+        agora = datetime.now()
+
+        if datetime_agendamento < agora:
+            raise ValueError("Não é possível agendar um serviço para uma data e hora anteriores à atual.")
+
+        hora_abertura = datetime.strptime('07:00', '%H:%M').time()
+        hora_fechamento = datetime.strptime('18:00', '%H:%M').time()
+        if hora < hora_abertura or hora > hora_fechamento:
+            raise ValueError("Horários disponíveis apenas entre 07:00 e 18:00.")
+
         agendamentos_no_dia = self.agendamentoDao.listar_por_data(data_str)
 
-        # Verificar conflitos dentro de 30 minutos antes/depois
         intervalo = timedelta(minutes=30)
 
         for ag in agendamentos_no_dia:
@@ -47,8 +55,13 @@ class ClienteController:
             if diff < intervalo:
                 raise ValueError(f"Já existe um agendamento próximo a {ag.hora}. Por favor, escolha outro horário.")
 
-        # Se passou na verificação, cria o agendamento normalmente
-        agendamento = Agendamento(cliente_id=cliente_id, pet_id=pet_id, servico_id=servico_id, data=data_str, hora=hora_str)
+        agendamento = Agendamento(
+            cliente_id=cliente_id,
+            pet_id=pet_id,
+            servico_id=servico_id,
+            data=data_str,
+            hora=hora_str
+        )
         self.agendamentoDao.agendar(agendamento)
 
     def remover_agendamento(self, agendamento_id):
