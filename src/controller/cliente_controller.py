@@ -1,5 +1,6 @@
 from model.agendamento import Agendamento
 from database.agendamento_dao import AgendamentoDAO
+from datetime import datetime, timedelta
 
 class ClienteController:
     def __init__(self):
@@ -23,7 +24,33 @@ class ClienteController:
         for ag in agendamentos:
             print(f"ID: {ag.id} | Serviço: {ag.servico_id} | Data: {ag.data} | Hora: {ag.hora}")
 
-    def agendar_servico_web(self, cliente_id, pet_id, servico_id, data, hora):
-        agendamento = Agendamento(cliente_id=cliente_id, pet_id=pet_id, servico_id=servico_id, data=data, hora=hora)
+    from datetime import datetime, timedelta
+
+    def agendar_servico_web(self, cliente_id, pet_id, servico_id, data_str, hora_str):
+        # Converter data e hora em datetime
+        data = datetime.strptime(data_str, '%Y-%m-%d').date()
+        hora = datetime.strptime(hora_str, '%H:%M').time()
+        datetime_agendamento = datetime.combine(data, hora)
+
+        # Buscar agendamentos já marcados na mesma data
+        agendamentos_no_dia = self.agendamentoDao.listar_por_data(data_str)
+
+        # Verificar conflitos dentro de 30 minutos antes/depois
+        intervalo = timedelta(minutes=30)
+
+        for ag in agendamentos_no_dia:
+            ag_data = datetime.strptime(ag.data, '%Y-%m-%d').date()
+            ag_hora = datetime.strptime(ag.hora, '%H:%M').time()
+            ag_datetime = datetime.combine(ag_data, ag_hora)
+
+            diff = abs(datetime_agendamento - ag_datetime)
+            if diff < intervalo:
+                raise ValueError(f"Já existe um agendamento próximo a {ag.hora}. Por favor, escolha outro horário.")
+
+        # Se passou na verificação, cria o agendamento normalmente
+        agendamento = Agendamento(cliente_id=cliente_id, pet_id=pet_id, servico_id=servico_id, data=data_str, hora=hora_str)
         self.agendamentoDao.agendar(agendamento)
+
+    def remover_agendamento(self, agendamento_id):
+        self.agendamentoDao.remover(agendamento_id)
 
