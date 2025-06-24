@@ -1,169 +1,234 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel do Atendente - Busca de Clientes</title>
-    <style>
-        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f9; }
-        h1, h2 { color: #333; }
-        .search-container { margin-bottom: 2em; }
-        input[type="text"], input[type="date"] { padding: 10px; width: 300px; border-radius: 5px; border: 1px solid #ccc; }
-        button { padding: 10px 15px; border: none; background-color: #007bff; color: white; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .results-container { margin-top: 1em; }
-        .cliente-card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1em; margin-bottom: 1em; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .cliente-card h2 { margin-top: 0; }
-        .pet-info { margin-left: 20px; border-left: 3px solid #007bff; padding-left: 15px; }
-        #logout { position: absolute; top: 15px; right: 15px; text-decoration: none; }
-        .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 1em; margin-top: 1em; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
-        .excluir-btn { background-color: #dc3545; margin-top: 10px; }
-        .excluir-btn:hover { background-color: #a71d2a; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Funcionário</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #fff;
+      color: #333;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    h1, h2 {
+      margin-bottom: 20px;
+    }
+
+    .search-container {
+      margin-bottom: 30px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-container input[type="text"] {
+      padding: 10px;
+      width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .search-container button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .search-container button:hover {
+      background-color: #0056b3;
+    }
+
+    #results-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .cliente-card {
+      background-color: #fefefe;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .pet-info {
+      margin-left: 20px;
+      border-left: 3px solid #007bff;
+      padding-left: 15px;
+    }
+
+    #agendamentos {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background-color: #fefefe;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .excluir-btn {
+      background-color: #dc3545;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 12px;
+      margin-top: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .excluir-btn:hover {
+      background-color: #a71d2a;
+    }
+
+    .btn-sair {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 20px;
+      background-color: #333;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
 
-    <a id="logout" href="/logout">Sair</a>
+  <a class="btn-sair" href="/logout">Sair</a>
 
-    <h1>Painel do Atendente</h1>
-    <p>Busque clientes por nome ou CPF para visualizar seus dados e de seus pets.</p>
+  <h1>Painel do Funcionário</h1>
+  <p>Busque clientes por nome ou CPF para visualizar seus dados e de seus pets.</p>
 
-    <div class="search-container">
-        <form id="search-form">
-            <input type="text" id="search-term" name="termo" placeholder="Digite o nome ou CPF do cliente" required>
-            <button type="submit">Buscar</button>
-        </form>
-    </div>
+  <div class="search-container">
+    <form id="search-form">
+      <input type="text" id="search-term" name="termo" placeholder="Digite o nome ou CPF do cliente" required>
+      <button type="submit">Buscar</button>
+    </form>
+  </div>
 
-    <h2>Agendamentos</h2>
-    <label for="filtro-data">Filtrar por data:</label>
-    <input type="date" id="filtro-data">
-    <button onclick="carregarAgendamentos()">Filtrar</button>
+  <h2>Agendamentos</h2>
+  <label for="filtro-data">Filtrar por data:</label>
+  <input type="date" id="filtro-data">
+  <button onclick="carregarAgendamentos()">Filtrar</button>
 
-    <div id="agendamentos"></div>
+  <div id="agendamentos"></div>
 
-    <script>
-        async function carregarAgendamentos() {
-            const data = document.getElementById('filtro-data').value;
-            let url = '/api/agendamentos/detalhes';
-            if (data) {
-                url += `?data=${data}`;
-            }
+  <hr>
 
-            const res = await fetch(url);
-            const agendamentos = await res.json();
-            const container = document.getElementById('agendamentos');
-            container.innerHTML = '';
+  <div id="results-container"></div>
 
-            if (agendamentos.length === 0) {
-                container.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
-                return;
-            }
+  <script>
+    async function carregarAgendamentos() {
+      const data = document.getElementById('filtro-data').value;
+      let url = '/api/agendamentos/detalhes';
+      if (data) url += `?data=${data}`;
 
-            agendamentos.forEach(ag => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <strong>Data:</strong> ${ag.data}<br>
-                    <strong>Hora:</strong> ${ag.hora}<br>
-                    <strong>Pet:</strong> ${ag.nome_pet}<br>
-                    <strong>Cliente:</strong> ${ag.nome_cliente}<br>
-                    <strong>Serviço:</strong> ${ag.nome_servico}<br>
-                    <button class="excluir-btn" data-id="${ag.id}">Excluir</button>
-                    <hr>
-                `;
-                container.appendChild(card);
-            });
+      const res = await fetch(url);
+      const agendamentos = await res.json();
+      const container = document.getElementById('agendamentos');
+      container.innerHTML = '';
 
-            document.querySelectorAll('.excluir-btn').forEach(button => {
-                button.addEventListener('click', async function () {
-                    const confirmacao = confirm("Deseja realmente excluir este agendamento?");
-                    if (!confirmacao) return;
+      if (agendamentos.length === 0) {
+        container.innerHTML = '<p>Nenhum agendamento encontrado.</p>';
+        return;
+      }
 
-                    const id = this.getAttribute('data-id');
-                    const formData = new FormData();
-                    formData.append('id', id);
+      agendamentos.forEach(ag => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <strong>Data:</strong> ${ag.data}<br>
+          <strong>Hora:</strong> ${ag.hora}<br>
+          <strong>Pet:</strong> ${ag.nome_pet}<br>
+          <strong>Cliente:</strong> ${ag.nome_cliente}<br>
+          <strong>Serviço:</strong> ${ag.nome_servico}<br>
+          <button class="excluir-btn" data-id="${ag.id}">Excluir</button>
+        `;
+        container.appendChild(card);
+      });
 
-                    const res = await fetch('/api/excluir-agendamento', {
-                        method: 'POST',
-                        body: formData,
-                        credentials: "include"
-                    });
+      document.querySelectorAll('.excluir-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+          if (!confirm('Deseja realmente excluir este agendamento?')) return;
+          const id = this.dataset.id;
+          const fd = new FormData();
+          fd.append('id', id);
+          const res = await fetch('/api/excluir-agendamento', { method: 'POST', body: fd, credentials: 'include' });
+          if (res.ok) carregarAgendamentos();
+          else alert('Erro ao excluir agendamento.');
+        });
+      });
+    }
 
-                    if (res.ok) {
-                        alert('Agendamento excluído com sucesso!');
-                        carregarAgendamentos();
-                    } else {
-                        alert('Erro ao excluir agendamento.');
-                    }
-                });
-            });
+    window.onload = carregarAgendamentos;
+
+    document.getElementById('search-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const termo = document.getElementById('search-term').value;
+      const rc = document.getElementById('results-container');
+      rc.innerHTML = '<p>Buscando...</p>';
+
+      try {
+        const res = await fetch(`/api/buscar-clientes?termo=${encodeURIComponent(termo)}`);
+        if (!res.ok) throw new Error(`Erro na busca: ${res.statusText}`);
+        const data = await res.json();
+
+        if (data.length === 0) {
+          rc.innerHTML = '<p>Nenhum cliente encontrado.</p>';
+          return;
         }
 
-        window.onload = carregarAgendamentos;
-    </script>
+        rc.innerHTML = '';
+        data.forEach(c => {
+          const card = document.createElement('div');
+          card.className = 'cliente-card';
+          let petsHtml = '<h4>Pets:</h4>';
 
-    <hr>
+          if (c.pets.length > 0) {
+            c.pets.forEach(p => {
+              petsHtml += `
+                <div class="pet-info">
+                  <p><strong>Nome:</strong> ${p.nome_pet}</p>
+                  <p><strong>Raça:</strong> ${p.raca_pet} | <strong>Idade:</strong> ${p.idade_pet} anos | <strong>Tipo:</strong> ${p.tipo_animal_pet}</p>
+                </div>`;
+            });
+          } else {
+            petsHtml += '<p>Nenhum pet cadastrado.</p>';
+          }
 
-    <div id="results-container" class="results-container"></div>
-
-    <script>
-        document.getElementById('search-form').addEventListener('submit', async function(event) {
-            event.preventDefault();
-
-            const termo = document.getElementById('search-term').value;
-            const resultsContainer = document.getElementById('results-container');
-            resultsContainer.innerHTML = '<p>Buscando...</p>';
-
-            try {
-                const response = await fetch(`/api/buscar-clientes?termo=${encodeURIComponent(termo)}`);
-
-                if (!response.ok) {
-                    throw new Error(`Erro na busca: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-
-                if (data.length === 0) {
-                    resultsContainer.innerHTML = '<p>Nenhum cliente encontrado.</p>';
-                    return;
-                }
-
-                resultsContainer.innerHTML = '';
-
-                data.forEach(cliente => {
-                    const clienteCard = document.createElement('div');
-                    clienteCard.className = 'cliente-card';
-
-                    let petsHtml = '<h4>Pets:</h4>';
-                    if (cliente.pets.length > 0) {
-                        cliente.pets.forEach(pet => {
-                            petsHtml += `
-                                <div class="pet-info">
-                                    <p><strong>Nome do Pet:</strong> ${pet.nome_pet}</p>
-                                    <p><strong>Raça:</strong> ${pet.raca_pet} | <strong>Idade:</strong> ${pet.idade_pet} anos | <strong>Tipo:</strong> ${pet.tipo_animal_pet}</p>
-                                </div>
-                            `;
-                        });
-                    } else {
-                        petsHtml += '<p>Nenhum pet cadastrado.</p>';
-                    }
-
-                    clienteCard.innerHTML = `
-                        <h2>${cliente.nome_cliente}</h2>
-                        <p><strong>CPF:</strong> ${cliente.cpf_cliente}</p>
-                        <p><strong>Contato:</strong> ${cliente.contato_cliente}</p>
-                        ${petsHtml}
-                    `;
-                    resultsContainer.appendChild(clienteCard);
-                });
-
-            } catch (error) {
-                resultsContainer.innerHTML = `<p style="color: red;">${error.message}</p>`;
-                console.error('Falha ao buscar clientes:', error);
-            }
+          card.innerHTML = `
+            <h2>${c.nome_cliente}</h2>
+            <p><strong>CPF:</strong> ${c.cpf_cliente}</p>
+            <p><strong>Contato:</strong> ${c.contato_cliente}</p>
+            ${petsHtml}
+          `;
+          rc.appendChild(card);
         });
-    </script>
+      } catch (err) {
+        rc.innerHTML = `<p style="color:red;">${err.message}</p>`;
+      }
+    });
+  </script>
 
 </body>
 </html>

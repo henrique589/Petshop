@@ -4,31 +4,92 @@
   <meta charset="UTF-8">
   <title>Cadastro de Cliente</title>
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    form {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    input {
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px;
+      border: none;
+      background-color: #666; 
+      color: white;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #4d4d4d; 
+    }
+
     .erro {
       background-color: #ffe0e0;
       color: #a00;
       padding: 10px;
       border: 1px solid #a00;
-      margin-bottom: 10px;
-      display: none;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .link-voltar {
+      margin-top: 20px;
+      text-decoration: none;
+      color: #555;
+      font-weight: bold;
+    }
+
+    .link-voltar:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
+
   <h2>Cadastro de Cliente</h2>
 
-  <div id="erro-email" class="erro">❌ Este e-mail já está cadastrado!</div>
+  <div id="erro-email" class="erro" style="display: none;">❌ Este e-mail já está cadastrado!</div>
 
   <form action="/cadastro" method="POST">
-    <input type="text" name="nome" placeholder="Nome" required><br>
-    <input type="email" name="email" placeholder="E-mail" required><br>
-    <input type="password" name="senha" placeholder="Senha" required><br>
-    <input type="text" name="telefone" placeholder="Telefone" required><br>
-    <input type="text" name="cpf" placeholder="CPF" required><br>
+    <input type="text" name="nome" placeholder="Nome" required>
+    <input type="email" name="email" placeholder="E-mail" required>
+    <input type="password" name="senha" placeholder="Senha" required>
+    <input type="text" name="telefone" placeholder="Telefone" required>
+    <input type="text" name="cpf" placeholder="CPF" required>
     <button type="submit">Cadastrar</button>
   </form>
 
-  <p><a href="/">Voltar para login</a></p>
+  <a href="/" class="link-voltar">Voltar para login</a>
 
   <script>
     const params = new URLSearchParams(window.location.search);
@@ -36,5 +97,6 @@
       document.getElementById('erro-email').style.display = 'block';
     }
   </script>
+
 </body>
 </html>

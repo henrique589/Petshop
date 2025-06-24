@@ -31,13 +31,12 @@
   <p><a href="/logout">Sair</a></p>
 
   <script>
-    // Carrega pets
     function carregarPets() {
       fetch('/api/pets')
         .then(res => res.json())
         .then(pets => {
           const container = document.getElementById('lista-pets');
-          container.innerHTML = ''; // Limpa
+          container.innerHTML = ''; 
 
           if (pets.length === 0) {
             container.innerHTML = "<p>Você ainda não cadastrou nenhum pet.</p>";
@@ -59,7 +58,6 @@
         });
     }
 
-    // Envia novo pet
     document.getElementById('form-pet').addEventListener('submit', function(e) {
       e.preventDefault();
       const formData = new FormData(this);
@@ -70,14 +68,13 @@
       }).then(res => {
         if (res.ok) {
           this.reset();
-          carregarPets();  // atualiza lista
+          carregarPets();  
         } else {
           alert("Erro ao cadastrar pet.");
         }
       });
     });
 
-    // Carregar pets ao abrir a página
     carregarPets();
   </script>
 </body>
