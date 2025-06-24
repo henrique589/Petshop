@@ -42,6 +42,7 @@
                             <strong>Descrição:</strong> ${s.descricao}<br>
                             <strong>Preço:</strong> R$ ${s.preco.toFixed(2)}<br>
                             <strong>Estoque:</strong> ${s.estoque}<br>
+                            <strong>Duração:</strong> 30 min<br>
                         `;
                         div.appendChild(card);
                     });
@@ -88,17 +89,23 @@
         document.getElementById('form-agendamento').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            const res = await fetch('/api/agendamentos', {
-                method: 'POST',
-                body: formData
-            });
-            if (res.ok) {
-                alert("✅ Agendamento realizado com sucesso!");
-                this.reset();
-            } else {
-                alert("❌ Erro ao agendar.");
+            try {
+                const res = await fetch('/api/agendamentos', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    alert("✅ Agendamento realizado com sucesso!");
+                    this.reset();
+                } else {
+                    const data = await res.json();
+                    alert("❌ " + (data.erro || "Erro ao agendar"));
+                }
+            } catch (err) {
+                alert("❌ Erro inesperado: " + err.message);
             }
         });
+
 
         carregarPets();
         carregarServicosAgendamento();

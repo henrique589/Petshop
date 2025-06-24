@@ -354,22 +354,27 @@ def api_agendar_servico():
     if not cliente_id:
         return {"erro": "Cliente não encontrado"}, 404
 
-    pet_id = int(request.form['pet_id'])  
-    servico_id = int(request.form['servico_id'])
-    data = request.form['data']
-    hora = request.form['hora']
+    try:
+        pet_id = int(request.form['pet_id'])  
+        servico_id = int(request.form['servico_id'])
+        data = request.form['data']
+        hora = request.form['hora']
 
-    cliente_controller.agendar_servico_web(cliente_id, pet_id, servico_id, data, hora)
-    return '', 204
+        cliente_controller.agendar_servico_web(cliente_id, pet_id, servico_id, data, hora)
+        return '', 204
+
+    except ValueError as e:
+        return {"erro": str(e)}, 400
 
 @app.route('/api/excluir-agendamento', methods=['POST'])
 def api_excluir_agendamento():
-    if 'usuario' not in session or session['tipo'] != 'cliente':
+    if 'usuario' not in session or session['tipo'] not in ['cliente', 'atendente', 'gerente', 'funcionario']:
         return {"erro": "Não autorizado"}, 401
 
     agendamento_id = int(request.form['id'])
-    cliente_controller.agendamentoDao.remover(agendamento_id)
+    cliente_controller.remover_agendamento(agendamento_id) 
     return '', 204
+
 
 @app.route('/servicos-cliente')
 def servicos_cliente():
