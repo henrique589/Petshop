@@ -6,3 +6,14 @@ class Agendamento:
         self.servico_id = servico_id
         self.data = data
         self.hora = hora
+
+    def to_dict(self):
+    
+        return {
+            "id": self.id,
+            "cliente_id": self.cliente_id,
+            "pet_id": self.pet_id,
+            "servico_id": self.servico_id,
+            "data": self.data,
+            "hora": self.hora
+        }
