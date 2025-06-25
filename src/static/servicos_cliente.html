@@ -6,6 +6,41 @@
   <title>Painel de Serviços</title>
   <style>
 
+    .form-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-start;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #4f5255;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #1b8805;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #8f0e0e;
+    }
+
     .titulo-grande::after {
       content: '';
       display: block;
@@ -98,6 +133,11 @@
       background-color: #555;
     }
 
+    hr {
+      margin: 40px 0 20px;
+    }
+
+
     .card button {
       margin-top: 10px;
       background-color: #c00;
@@ -114,15 +154,17 @@
   <h2 class=" titulo-grande">Lista de Serviços</h2>
   <div id="lista-servicos"></div>
   
+  <hr>
   <h3 class="titulo-medio">Agendar Serviço</h3>
   <form id="form-agendamento">
     <select name="pet_id" id="pet_id" required></select>
     <select name="servico_id" id="servico_id" required></select>
     <input type="date" name="data" required>
     <input type="time" name="hora" required>
-    <button type="submit">Agendar</button>
+    <button type="submit" class="btn btn-primary">Agendar</button>
   </form>
 
+  <hr>
   <h3 style="margin-top: 30px;" class="titulo-grande" >Seus Agendamentos</h3>
   <div id="lista-agendamentos"></div>
 
@@ -191,7 +233,7 @@
           <strong>Hora:</strong> ${ag.hora}<br>
           <strong>Pet:</strong> ${ag.nome_pet}<br>
           <strong>Serviço:</strong> ${ag.nome_servico}<br>
-          <button onclick="cancelarAgendamento(${ag.id})">Cancelar</button>
+          <button onclick="cancelarAgendamento(${ag.id})" class= "btn btn-secondary">Cancelar</button>
         `;
         container.appendChild(card);
       });
