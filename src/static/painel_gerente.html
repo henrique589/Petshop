@@ -1,10 +1,108 @@
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Painel do Gerente</title>
   <style>
-    .card { border: 1px solid #ccc; padding: 12px; margin: 12px; border-radius: 8px; }
-    .input-group { margin-bottom: 8px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #fff;
+      color: #333;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    h2, h3 {
+      margin-bottom: 20px;
+    }
+
+    #usuarios {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .card {
+      border: 1px solid #ccc;
+      padding: 16px;
+      border-radius: 10px;
+      background-color: #fefefe;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      width: 280px;
+    }
+
+    .card button {
+      margin-top: 10px;
+      margin-right: 8px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .card button:first-of-type {
+      background-color: #ccc;
+    }
+
+    .card button:last-of-type {
+      background-color: #c00;
+      color: white;
+    }
+
+    form {
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 40px;
+    }
+
+    form input, form select {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    form button {
+      padding: 12px;
+      background-color: #333;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    form button[type="button"] {
+      background-color: #999;
+    }
+
+    .btn-fixed {
+      position: fixed;
+      bottom: 20px;
+      padding: 12px 20px;
+      background-color: #333;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 100;
+    }
+
+    .btn-servicos {
+      left: 20px;
+    }
+
+    .btn-produtos {
+      left: 160px;
+    }
+
+    .btn-sair {
+      right: 20px;
+    }
   </style>
 </head>
 <body>
@@ -12,34 +110,32 @@
 
   <div id="usuarios"></div>
 
-  <hr>
   <h3 id="form-title">Adicionar Novo Usuário</h3>
   <form id="form-usuario">
     <input type="hidden" name="id" id="id">
-    <div class="input-group">
-      <input type="text" name="nome" placeholder="Nome" required>
-    </div>
-    <div class="input-group">
-      <input type="email" name="email" placeholder="Email" required>
-    </div>
-    <div class="input-group">
-      <input type="password" name="senha" placeholder="Senha" required>
-    </div>
-    <div class="input-group">
-      <select name="tipo" required>
-        <option value="cliente">Cliente</option>
-        <option value="funcionario">Funcionário</option>
-        <option value="gerente">Gerente</option>
-      </select>
-    </div>
+    <input type="text" name="nome" placeholder="Nome" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="senha" placeholder="Senha" required>
+    <select name="tipo" required>
+      <option value="cliente">Cliente</option>
+      <option value="funcionario">Funcionário</option>
+      <option value="gerente">Gerente</option>
+    </select>
     <button type="submit">Salvar</button>
     <button type="button" onclick="cancelarEdicao()">Cancelar</button>
   </form>
 
-  <p><a href="/painel-servicos">Gerenciar Serviços</a></p>
-  <p><a href="/painel-produtos">Gerenciar Produtos</a></p>
+  <form action="/painel-servicos" method="get">
+    <button class="btn-fixed btn-servicos" type="submit">Serviços</button>
+  </form>
 
-  <p><a href="/logout">Sair</a></p>
+  <form action="/painel-produtos" method="get">
+    <button class="btn-fixed btn-produtos" type="submit">Produtos</button>
+  </form>
+
+  <form action="/logout" method="get">
+    <button class="btn-fixed btn-sair" type="submit">Sair</button>
+  </form>
 
   <script>
     function carregarUsuarios() {
