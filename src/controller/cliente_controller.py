@@ -35,7 +35,7 @@ class ClienteController:
         agora = datetime.now()
 
         if datetime_agendamento < agora:
-            raise ValueError("Não é possível agendar um serviço para uma data e hora anteriores à atual.")
+            raise ValueError("Não é possível agendar um serviço para uma data ou hora anteriores à atual.")
 
         hora_abertura = datetime.strptime('07:00', '%H:%M').time()
         hora_fechamento = datetime.strptime('18:00', '%H:%M').time()

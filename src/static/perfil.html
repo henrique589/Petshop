@@ -5,6 +5,27 @@
   <meta charset="UTF-8">
   <title>Perfil do Cliente</title>
   <style>
+
+    .titulo-grande::after {
+      content: '';
+      display: block;
+      width: 200px;
+      height: 4px;
+      background-color: #c00;
+      margin-top: 8px;
+      border-radius: 2px;
+    }
+
+    .titulo-medio::after {
+      content: '';
+      display: block;
+      width: 160px;
+      height: 4px;
+      background-color: #c00;
+      margin-top: 8px;
+      border-radius: 2px;
+    }
+
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
@@ -111,11 +132,11 @@
 </head>
 
 <body>
-  <h2>Seus Pets</h2>
+  <h2 class="titulo-medio">Seus Pets</h2>
   <div id="lista-pets"></div>
 
   <hr>
-  <h3 id="form-title">Cadastrar Novo Pet</h3>
+  <h3 id="form-title" class=" titulo-grande">Cadastrar Novo Pet</h3>
   <form id="form-pet">
     <input type="hidden" name="id_pet" id="id_pet">
     <input type="text" name="nome" placeholder="Nome do Pet" required>
@@ -134,6 +155,8 @@
   <form action="/logout" method="get">
     <button class="btn-fixed btn-sair" type="submit">Sair</button>
   </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <script>
     function carregarPets() {
@@ -181,31 +204,84 @@
       document.getElementById('id_pet').value = '';
     }
 
-    function excluirPet(id) {
-      if (!confirm("Tem certeza que deseja excluir este pet?")) return;
+    async function excluirPet(id) {
+      const confirmacao = await Swal.fire({
+        title: 'Tem certeza?',
+        text: 'Você deseja mesmo excluir este pet? Esta ação não poderá ser desfeita.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, excluir',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!confirmacao.isConfirmed) return;
 
       const formData = new FormData();
       formData.append('id_pet', id);
 
-      fetch('/excluir-pet', {
+      const res = await fetch('/excluir-pet', {
         method: 'POST',
         body: formData
-      }).then(() => carregarPets());
+      });
+
+      if (res.ok) {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Excluído!',
+          text: 'O pet foi excluído com sucesso.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        carregarPets();
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro',
+          text: 'Ocorreu um erro ao excluir o pet.'
+        });
+      }
     }
 
-    document.getElementById('form-pet').addEventListener('submit', function (e) {
+    document.getElementById('form-pet').addEventListener('submit', async function (e) {
       e.preventDefault();
       const formData = new FormData(this);
       const rota = formData.get('id_pet') ? '/editar-pet' : '/cadastro-pet';
 
-      fetch(rota, {
-        method: 'POST',
-        body: formData
-      }).then(() => {
-        cancelarEdicao();
-        carregarPets();
-      });
+      try {
+        const res = await fetch(rota, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          const mensagem = formData.get('id_pet') ? 'Pet atualizado com sucesso!' : 'Novo pet cadastrado com sucesso!';
+          await Swal.fire({
+            icon: 'success',
+            title: 'Sucesso!',
+            text: mensagem,
+            timer: 2000,
+            showConfirmButton: false
+          });
+          cancelarEdicao();
+          carregarPets();
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Ocorreu um erro ao salvar os dados do pet.'
+          });
+        }
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro inesperado',
+          text: err.message
+        });
+      }
     });
+
 
     carregarPets();
   </script>
