@@ -399,6 +399,14 @@ def api_agendamentos_detalhados():
     agendamentos = cliente_controller.agendamentoDao.listar_todos_com_detalhes(data)
     return agendamentos  
 
+@app.route('/api/agendamentos-cliente')
+def api_agendamentos_cliente():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return {"erro": "Não autorizado"}, 401
+
+    cliente_id = get_cliente_id()
+    return cliente_controller.agendamentoDao.listar_todos_com_detalhes_cliente(cliente_id)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
