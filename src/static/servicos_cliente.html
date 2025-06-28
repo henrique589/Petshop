@@ -5,6 +5,63 @@
   <meta charset="UTF-8">
   <title>Painel de Serviços</title>
   <style>
+
+    .form-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-start;
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #4f5255;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #1b8805;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #8f0e0e;
+    }
+
+    .titulo-grande::after {
+      content: '';
+      display: block;
+      width: 220px;
+      height: 4px;
+      background-color: #c00;
+      margin-top: 8px;
+      border-radius: 2px;
+    }
+
+    .titulo-medio::after {
+      content: '';
+      display: block;
+      width: 160px;
+      height: 4px;
+      background-color: #c00;
+      margin-top: 8px;
+      border-radius: 2px;
+    }
+
+
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
@@ -18,17 +75,17 @@
       margin-bottom: 20px;
     }
 
-    #lista-servicos {
+    #lista-servicos, #lista-agendamentos {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
     }
 
     .card {
-      border: 1px solid #ccc;
+      border: 1px solid #6b0a0a;
       padding: 16px;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 6px rgba(77, 4, 4, 0.589);
       background-color: #fefefe;
       width: 280px;
     }
@@ -46,6 +103,7 @@
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
+      background-color: #ffffff;
     }
 
     form button {
@@ -73,46 +131,72 @@
     }
 
     .btn-voltar:hover {
-      background-color: #555;
+      background-color: #550404;
+    }
+
+    hr {
+      margin: 40px 0 20px;
+    }
+
+
+    .card button {
+      margin-top: 10px;
+      background-color: #c00;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #form-agendamento {
+      background-color: #e0dddd;
+      padding: 20px 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(114, 4, 4, 0.466);
+      max-width: 500px;
     }
   </style>
 </head>
 
 <body>
-  <h2>Lista de Serviços</h2>
+  <h2 class=" titulo-grande">Lista de Serviços</h2>
   <div id="lista-servicos"></div>
-
-  <h3>Agendar Serviço</h3>
+  
+  <hr>
+  <h3 class="titulo-medio">Agendar Serviço</h3>
   <form id="form-agendamento">
     <select name="pet_id" id="pet_id" required></select>
     <select name="servico_id" id="servico_id" required></select>
     <input type="date" name="data" required>
     <input type="time" name="hora" required>
-    <button type="submit">Agendar</button>
+    <button type="submit" class="btn btn-primary">Agendar</button>
   </form>
+
+  <hr>
+  <h3 style="margin-top: 30px;" class="titulo-grande" >Seus Agendamentos</h3>
+  <div id="lista-agendamentos"></div>
 
   <a href="/perfil" class="btn-voltar">Voltar ao Perfil</a>
 
   <script>
-    function carregarServicos() {
-      fetch('/api/servicos')
-        .then(res => res.json())
-        .then(servicos => {
-          const div = document.getElementById('lista-servicos');
-          div.innerHTML = '';
-          servicos.forEach(s => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-              <strong>Nome:</strong> ${s.nome}<br>
-              <strong>Descrição:</strong> ${s.descricao}<br>
-              <strong>Preço:</strong> R$ ${s.preco.toFixed(2)}<br>
-              <strong>Estoque:</strong> ${s.estoque}<br>
-              <strong>Duração:</strong> 30 min<br>
-            `;
-            div.appendChild(card);
-          });
-        });
+    async function carregarServicos() {
+      const res = await fetch('/api/servicos');
+      const servicos = await res.json();
+      const div = document.getElementById('lista-servicos');
+      div.innerHTML = '';
+      servicos.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <strong>Nome:</strong> ${s.nome}<br>
+          <strong>Descrição:</strong> ${s.descricao}<br>
+          <strong>Preço:</strong> R$ ${s.preco.toFixed(2)}<br>
+          <strong>Estoque:</strong> ${s.estoque}<br>
+          <strong>Duração:</strong> 30 min<br>
+        `;
+        div.appendChild(card);
+      });
     }
 
     async function carregarPets() {
@@ -139,30 +223,127 @@
       });
     }
 
-    document.getElementById('form-agendamento').addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const formData = new FormData(this);
+    async function carregarAgendamentos() {
+      const res = await fetch('/api/agendamentos-cliente');
+      const agendamentos = await res.json();
+      const container = document.getElementById('lista-agendamentos');
+      container.innerHTML = '';
+
+      if (agendamentos.length == 0) {
+        container.innerHTML = "<p>Você ainda não possui agendamentos.</p>";
+        return;
+      }
+
+      agendamentos.forEach(ag => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <strong>Data:</strong> ${ag.data}<br>
+          <strong>Hora:</strong> ${ag.hora}<br>
+          <strong>Pet:</strong> ${ag.nome_pet}<br>
+          <strong>Serviço:</strong> ${ag.nome_servico}<br>
+          <button onclick="cancelarAgendamento(${ag.id})" class= "btn btn-secondary">Cancelar</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function cancelarAgendamento(id) {
+      const confirmacao = await Swal.fire({
+        title: 'Tem certeza?',
+        text: 'Deseja realmente cancelar este agendamento?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim',
+        cancelButtonText: 'Não'
+      });
+
+      if (!confirmacao.isConfirmed) return;
+
       try {
-        const res = await fetch('/api/agendamentos', {
+        const formData = new FormData();
+        formData.append('id', id);
+
+        const res = await fetch('/api/excluir-agendamento', {
           method: 'POST',
           body: formData
         });
+
         if (res.ok) {
-          alert("✅ Agendamento realizado com sucesso!");
-          this.reset();
+          await Swal.fire({
+            icon: 'success',
+            title: 'Cancelado',
+            text: 'O agendamento foi cancelado com sucesso.'
+          });
+          carregarAgendamentos();
         } else {
           const data = await res.json();
-          alert("❌ " + (data.erro || "Erro ao agendar"));
+          Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: data.erro || 'Erro ao cancelar o agendamento.'
+          });
         }
       } catch (err) {
-        alert("❌ Erro inesperado: " + err.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro inesperado',
+          text: err.message
+        });
       }
-    });
+    }
+
+
+    document.getElementById('form-agendamento').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+
+    try {
+      const res = await fetch('/api/agendamentos', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Agendamento realizado!',
+          text: ' Agendamento realizado com sucesso!',
+          confirmButtonColor: '#3085d6',
+          confirmButtonText: 'Ok'
+        });
+        this.reset();
+        carregarAgendamentos();
+      } else {
+        const data = await res.json();
+        Swal.fire({
+          icon: 'error',
+          title: 'Erro no agendamento',
+          text: data.erro || '❌ Ocorreu um erro ao tentar agendar.',
+          confirmButtonColor: '#d33',
+          confirmButtonText: 'Entendi'
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro inesperado',
+        text: '❌ ' + err.message,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Ok'
+      });
+    }
+  });
 
     carregarServicos();
     carregarPets();
     carregarServicosAgendamento();
+    carregarAgendamentos();
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 
 </html>
