@@ -106,4 +106,34 @@ class AgendamentoDAO:
                 "nome_servico": row[5]
             } for row in agendamentos
         ]
+    
+    def listar_todos_com_detalhes_cliente(self, cliente_id):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        query = '''
+            SELECT a.id, a.data, a.hora,
+                p.nome AS nome_pet,
+                s.nome AS nome_servico
+            FROM agendamentos a
+            JOIN pets p ON a.pet_id = p.id_pet
+            JOIN servicos s ON a.servico_id = s.id
+            WHERE a.cliente_id = ?
+            ORDER BY a.data, a.hora
+        '''
+        cursor.execute(query, (cliente_id,))
+        agendamentos = cursor.fetchall()
+        conn.close()
+
+        return [
+            {
+                "id": row[0],
+                "data": row[1],
+                "hora": row[2],
+                "nome_pet": row[3],
+                "nome_servico": row[4]
+            }
+            for row in agendamentos
+        ]
+
 

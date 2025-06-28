@@ -6,3 +6,5 @@ class Agendamento:
         self.servico_id = servico_id
         self.data = data
         self.hora = hora
+
+    
