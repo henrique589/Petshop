@@ -110,6 +110,38 @@
       cursor: pointer;
       text-decoration: none;
     }
+
+    .secao-vendas { 
+      display: flex; 
+      gap: 20px; 
+      padding: 15px; 
+      border-top: 2px solid #000; 
+      margin-top: 20px;
+    }
+    .secao-vendas .painel { 
+      flex: 1; 
+      padding: 15px; 
+      border: 1px solid #ccc; 
+      border-radius: 8px; 
+    }
+    .secao-vendas #lista-produtos .item, .secao-vendas #carrinho .item { 
+      display: flex; 
+      justify-content: 
+      space-between; padding: 8px; 
+      border-bottom: 1px solid #eee; 
+    }
+    .secao-vendas #carrinho .item button { 
+      background-color: #ff4d4d; 
+      color: white; 
+      border: none; 
+      cursor: pointer; 
+    }
+    .secao-vendas #total-venda { 
+      font-size: 1.2em; 
+      font-weight: bold; 
+      margin-top: 15px; 
+      text-align: right;
+    }
   </style>
 </head>
 <body>
@@ -136,6 +168,26 @@
   <hr>
 
   <div id="results-container"></div>
+
+  <div class="secao-vendas">
+        <div class="painel">
+            <h3>Registrar Venda de Produtos</h3>
+            <input type="text" id="busca-produto-venda" placeholder="Buscar produto..." style="width: 95%;">
+            <div id="lista-produtos-venda" style="height: 300px; overflow-y: auto; margin-top: 10px;"></div>
+        </div>
+
+        <div class="painel">
+            <h3>Carrinho</h3>
+            <div id="carrinho-venda" style="height: 250px; overflow-y: auto;">
+                <p>Nenhum item no carrinho.</p>
+            </div>
+            <div id="total-venda">Total: R$ 0.00</div>
+            <hr>
+            <input type="text" id="busca-cliente-cpf-venda" placeholder="CPF do Cliente (opcional)" style="width: 95%;">
+            <br><br>
+            <button onclick="finalizarVenda()">Finalizar Venda</button>
+        </div>
+    </div>
 
   <script>
     async function carregarAgendamentos() {
@@ -228,6 +280,119 @@
         rc.innerHTML = `<p style="color:red;">${err.message}</p>`;
       }
     });
+
+    let produtosDisponiveisVenda = [];
+    let carrinhoVenda = [];
+
+    async function carregarTodosProdutosParaVenda() {
+      try {
+        const res = await fetch('/api/produtos');
+        if (!res.ok) throw new Error('Falha ao carregar produtos');
+        produtosDisponiveisVenda = await res.json();
+        filtrarProdutosVenda();
+      } catch (error) {
+        document.getElementById('lista-produto-vendas').innerHTML = `<p style="color:red;">${error.message}</p>`;
+      }
+    }
+
+    function filtrarProdutosVenda(){
+      const termoBusca = document.getElementById('busca-produto-venda').value.toLowerCase();
+      const listaDiv = document.getElementById('lista-produtos-venda');
+      listaDiv.innerHTML = '';
+
+      const produtosFiltrados = produtosDisponiveisVenda.filter(p => p.nome.toLowerCase().includes(termoBusca) && p.estoque > 0);
+      if (produtosFiltrados.length === 0){
+        listaDiv.innerHTML = '<p>Nenhum produto encontrado ou com estoque.</p>';
+        return;
+      }
+      produtosFiltrados.forEach(p => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item';
+                itemDiv.innerHTML = `
+                    <span>${p.nome} (Estoque: ${p.estoque}) - R$ ${p.preco.toFixed(2)}</span>
+                    <button onclick="adicionarAoCarrinhoVenda(${p.id})">+</button>
+                `;
+                listaDiv.appendChild(itemDiv);
+            })
+    }
+    document.getElementById('busca-produto-venda').addEventListener('keyup', filtrarProdutosVenda);
+
+        function adicionarAoCarrinhoVenda(produtoId) {
+            const produto = produtosDisponiveisVenda.find(p => p.id === produtoId);
+            const itemNoCarrinho = carrinhoVenda.find(item => item.id === produtoId);
+
+            if (itemNoCarrinho) {
+                if (itemNoCarrinho.quantidade < produto.estoque) {
+                    itemNoCarrinho.quantidade++;
+                } else {
+                    alert('Quantidade máxima em estoque atingida.');
+                }
+            } else {
+                carrinhoVenda.push({ ...produto, quantidade: 1 });
+            }
+            renderizarCarrinhoVenda();
+        }
+
+        function removerDoCarrinhoVenda(produtoId) {
+            carrinhoVenda = carrinhoVenda.filter(item => item.id !== produtoId);
+            renderizarCarrinhoVenda();
+        }
+
+        function renderizarCarrinhoVenda() {
+            const carrinhoDiv = document.getElementById('carrinho-venda');
+            const totalDiv = document.getElementById('total-venda');
+            carrinhoDiv.innerHTML = '';
+            let total = 0;
+
+            if (carrinhoVenda.length === 0) {
+                carrinhoDiv.innerHTML = '<p>Nenhum item no carrinho.</p>';
+            } else {
+                carrinhoVenda.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item';
+                    itemDiv.innerHTML = `
+                        <span>${item.nome} (Qtd: ${item.quantidade})</span>
+                        <button onclick="removerDoCarrinhoVenda(${item.id})">x</button>
+                    `;
+                    carrinhoDiv.appendChild(itemDiv);
+                    total += item.preco * item.quantidade;
+                });
+            }
+            totalDiv.innerText = `Total: R$ ${total.toFixed(2)}`;
+        }
+        
+        async function finalizarVenda() {
+            if (carrinhoVenda.length === 0) {
+                alert('O carrinho está vazio!');
+                return;
+            }
+
+            const payload = {
+                itens: carrinhoVenda,
+                cpf_cliente: document.getElementById('busca-cliente-cpf-venda').value
+            };
+
+            const res = await fetch('/api/registrar-venda', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert(`Venda #${data.venda_id} registrada com sucesso!`);
+                carrinhoVenda = [];
+                renderizarCarrinhoVenda();
+                carregarTodosProdutosParaVenda();
+            } else {
+                alert('Erro ao registrar a venda: ' + data.erro);
+            }
+        }
+
+        window.onload = () => {
+            carregarAgendamentos();
+            carregarTodosProdutosParaVenda();
+        };
   </script>
 
 </body>
