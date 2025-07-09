@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, session, send_file
+from flask import Flask, request, redirect, url_for, session, send_file, jsonify
 from sqlite3 import IntegrityError
 from controller.usuario_controller import UsuarioController
 from controller.pet_controller import PetController
@@ -8,6 +8,8 @@ from controller.produto_controller import ProdutoController
 from model.produto import Produto
 from controller.cliente_controller import ClienteController
 from database.cliente_dao import ClienteDAO
+from controller.venda_controller import VendaController
+from database.venda_dao import VendaDAO
 import os
 
 app = Flask(__name__)
@@ -19,6 +21,8 @@ servico_controller = ServicoController()
 produto_controller = ProdutoController()
 cliente_dao = ClienteDAO()
 cliente_controller = ClienteController()
+vendas_controller = VendaController()
+venda_dao = VendaDAO()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_DIR = os.path.join(BASE_DIR, 'static')
@@ -29,6 +33,7 @@ def get_cliente_id():
     if not email:
         return None
     return cliente_dao.get_id_por_email(email)
+
 
 @app.route('/')
 def index():
@@ -149,24 +154,27 @@ def api_listar_pets():
     pets = pet_controller.listar_pets_por_email(email)
     return pets
 
+
 @app.route('/painel-funcionario')
 def painel_funcionario():
     if 'usuario' not in session or session.get('tipo') not in ['funcionario', 'gerente']:
         return redirect(url_for('index'))
-    
+
     return send_file(os.path.join(HTML_DIR, 'painel_funcionario.html'))
+
 
 @app.route('/api/buscar-clientes')
 def api_buscar_clientes():
     if 'usuario' not in session or session.get('tipo') not in ['funcionario', 'gerente']:
         return {"erro": "Não autorizado"}, 403
-    
+
     termo_busca = request.args.get('termo')
     if not termo_busca:
         return {"erro": "Termo de busca não fornecido"}, 400
 
     clientes = usuario_controller.buscar_clientes_e_pets(termo_busca)
     return clientes
+
 
 @app.route('/painel-gerente')
 def painel_gerente():
@@ -287,7 +295,7 @@ def painel_produtos():
 
 @app.route('/api/produtos')
 def api_listar_produtos():
-    if 'usuario' not in session or session['tipo'] != 'gerente':
+    if 'usuario' not in session or session['tipo'] not in ['gerente', 'funcionario']:
         return {"erro": "Não autorizado"}, 401
 
     produtos = produto_controller.dao.listar()
@@ -345,6 +353,7 @@ def api_excluir_produto():
     produto_controller.dao.remover(id_produto)
     return '', 204
 
+
 @app.route('/api/agendamentos', methods=['POST'])
 def api_agendar_servico():
     if 'usuario' not in session or session['tipo'] != 'cliente':
@@ -355,16 +364,18 @@ def api_agendar_servico():
         return {"erro": "Cliente não encontrado"}, 404
 
     try:
-        pet_id = int(request.form['pet_id'])  
+        pet_id = int(request.form['pet_id'])
         servico_id = int(request.form['servico_id'])
         data = request.form['data']
         hora = request.form['hora']
 
-        cliente_controller.agendar_servico_web(cliente_id, pet_id, servico_id, data, hora)
+        cliente_controller.agendar_servico_web(
+            cliente_id, pet_id, servico_id, data, hora)
         return '', 204
 
     except ValueError as e:
         return {"erro": str(e)}, 400
+
 
 @app.route('/api/excluir-agendamento', methods=['POST'])
 def api_excluir_agendamento():
@@ -372,7 +383,7 @@ def api_excluir_agendamento():
         return {"erro": "Não autorizado"}, 401
 
     agendamento_id = int(request.form['id'])
-    cliente_controller.remover_agendamento(agendamento_id) 
+    cliente_controller.remover_agendamento(agendamento_id)
     return '', 204
 
 
@@ -382,6 +393,7 @@ def servicos_cliente():
         return redirect('/')
     return send_file(os.path.join(HTML_DIR, 'servicos_cliente.html'))
 
+
 @app.route('/api/agendamentos-todos')
 def api_listar_agendamentos_todos():
     if 'usuario' not in session or session['tipo'] not in ['funcionario', 'gerente']:
@@ -390,14 +402,17 @@ def api_listar_agendamentos_todos():
     data = request.args.get('data')  # filtro opcional
     return cliente_controller.agendamentoDao.listar_todos_com_detalhes(data)
 
+
 @app.route('/api/agendamentos/detalhes')
 def api_agendamentos_detalhados():
     if 'usuario' not in session or session['tipo'] != 'funcionario':
         return {"erro": "Acesso não autorizado"}, 403
 
-    data = request.args.get('data') 
-    agendamentos = cliente_controller.agendamentoDao.listar_todos_com_detalhes(data)
-    return agendamentos  
+    data = request.args.get('data')
+    agendamentos = cliente_controller.agendamentoDao.listar_todos_com_detalhes(
+        data)
+    return agendamentos
+
 
 @app.route('/api/agendamentos-cliente')
 def api_agendamentos_cliente():
@@ -407,6 +422,51 @@ def api_agendamentos_cliente():
     cliente_id = get_cliente_id()
     return cliente_controller.agendamentoDao.listar_todos_com_detalhes_cliente(cliente_id)
 
+
+@app.route('/painel-venda-produtos')
+def painel_venda_produtos():
+    if 'usuario' not in session or session.get('tipo') not in ['gerente', 'funcionario']:
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'painel_venda_produtos.html'))
+
+
+@app.route('/api/registrar-venda', methods=['POST'])
+def api_registrar_venda():
+    if 'usuario' not in session or session.get('tipo') not in ['gerente', 'funcionario']:
+        return jsonify({"erro": "Não autorizado"}), 403
+
+    dados = request.get_json()
+    itens_carrinho = dados.get('itens')
+
+    if not itens_carrinho:
+        return jsonify({"erro": "Carrinho vazio"}), 400
+
+    email_funcionario = session['usuario']
+
+    venda_id = vendas_controller.processar_venda(
+        email_funcionario, itens_carrinho)
+    if venda_id:
+        return jsonify({"mensagem": "Venda registrada com sucesso!", "venda_id": venda_id})
+    else:
+        return jsonify({"erro": "Não foi possível registrar a venda."}), 500
+
+@app.route('/api/vendas/recentes')
+def api_vendas_recentes():
+    if 'usuario' not in session or session.get('tipo') not in ['gerente', 'funcionario']:
+        return jsonify({"erro": "Não autorizado."}), 403
+    
+    vendas_dia = venda_dao.listar_vendas_dia()
+
+    vendas = [
+        {
+            "id": venda[0],
+            "data": venda[1],
+            "total": venda[2],
+            "cliente": venda[3] if venda[3] is not None else "Não informado"
+        }
+        for venda in vendas_dia
+    ]
+    return vendas
 
 if __name__ == '__main__':
     app.run(debug=True)

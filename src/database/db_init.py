@@ -88,6 +88,30 @@ def criar_tabelas():
     ''')
 
     cursor.execute('''
+        CREATE TABLE vendas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cliente_id INTEGER,
+            funcionario_id INTEGER NOT NULL,
+            data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            valor_total REAL NOT NULL,
+            FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+            FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
+        );
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE venda_itens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            venda_id INTEGER NOT NULL,
+            produto_id INTEGER NOT NULL,
+            quantidade INTEGER NOT NULL,
+            preco_unitario REAL NOT NULL,
+            FOREIGN KEY (venda_id) REFERENCES vendas(id),
+            FOREIGN KEY (produto_id) REFERENCES produtos(id)
+        );
+    ''')
+
+    cursor.execute('''
         INSERT OR IGNORE INTO usuarios (id, nome, email, senha, tipo)
         VALUES (1, 'Administrador', 'admin@petshop.com', ?, 'gerente')
     ''', (gerar_senha('admin123'),))
