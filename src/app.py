@@ -9,6 +9,7 @@ from model.produto import Produto
 from controller.cliente_controller import ClienteController
 from database.cliente_dao import ClienteDAO
 from controller.venda_controller import VendaController
+from database.venda_dao import VendaDAO
 import os
 
 app = Flask(__name__)
@@ -21,6 +22,7 @@ produto_controller = ProdutoController()
 cliente_dao = ClienteDAO()
 cliente_controller = ClienteController()
 vendas_controller = VendaController()
+venda_dao = VendaDAO()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML_DIR = os.path.join(BASE_DIR, 'static')
@@ -293,7 +295,7 @@ def painel_produtos():
 
 @app.route('/api/produtos')
 def api_listar_produtos():
-    if 'usuario' not in session or session['tipo'] != 'funcionario':
+    if 'usuario' not in session or session['tipo'] not in ['gerente', 'funcionario']:
         return {"erro": "Não autorizado"}, 401
 
     produtos = produto_controller.dao.listar()
@@ -448,6 +450,23 @@ def api_registrar_venda():
     else:
         return jsonify({"erro": "Não foi possível registrar a venda."}), 500
 
+@app.route('/api/vendas/recentes')
+def api_vendas_recentes():
+    if 'usuario' not in session or session.get('tipo') not in ['gerente', 'funcionario']:
+        return jsonify({"erro": "Não autorizado."}), 403
+    
+    vendas_dia = venda_dao.listar_vendas_dia()
+
+    vendas = [
+        {
+            "id": venda[0],
+            "data": venda[1],
+            "total": venda[2],
+            "cliente": venda[3] if venda[3] is not None else "Não informado"
+        }
+        for venda in vendas_dia
+    ]
+    return vendas
 
 if __name__ == '__main__':
     app.run(debug=True)

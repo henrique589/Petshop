@@ -37,3 +37,21 @@ class VendaDAO:
             return None
         finally:
             conn.close()
+    
+    def listar_vendas_dia(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT v.id, 
+                strftime('%Y-%m-%dT%H:%M:%SZ', v.data_venda) as data_venda_iso, -- MODIFICADO AQUI
+                v.valor_total, 
+                u.nome
+            FROM vendas v
+            LEFT JOIN clientes c ON v.cliente_id = c.id
+            LEFT JOIN usuarios u ON c.usuario_id = u.id
+            WHERE DATE(v.data_venda) = DATE('now', 'localtime')
+            ORDER BY v.data_venda DESC
+        ''')
+        vendas = cursor.fetchall()
+        conn.close()
+        return vendas

@@ -142,6 +142,26 @@
       margin-top: 15px; 
       text-align: right;
     }
+    .tabela-historico {
+    width: 100%;
+    border-collapse: collapse; 
+    margin-top: 15px;
+    }
+    .tabela-historico th, .tabela-historico td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: left;
+    }
+    .tabela-historico th {
+        background-color: #f2f2f2; 
+        font-weight: bold;
+    }
+    .tabela-historico tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .tabela-historico tr:hover {
+        background-color: #f1f1f1;
+    }
   </style>
 </head>
 <body>
@@ -188,6 +208,10 @@
             <button onclick="finalizarVenda()">Finalizar Venda</button>
         </div>
     </div>
+
+    <hr>
+  <h2>Vendas Realizadas Hoje</h2>
+  <div id="historico-vendas-dia" style="max-height: 400px; overflow-y: auto;"></div>
 
   <script>
     async function carregarAgendamentos() {
@@ -384,15 +408,67 @@
                 carrinhoVenda = [];
                 renderizarCarrinhoVenda();
                 carregarTodosProdutosParaVenda();
+                carregarVendasRecentes();
             } else {
                 alert('Erro ao registrar a venda: ' + data.erro);
+            }
+        }
+        async function carregarVendasRecentes() {
+        try {
+          const res = await fetch('/api/vendas/recentes');
+          if (!res.ok) throw new Error('Falha ao carregar vendas recentes');
+          const vendas = await res.json();
+          
+          const container = document.getElementById('historico-vendas-dia');
+          container.innerHTML = '';
+
+          if (vendas.length === 0) {
+              container.innerHTML = '<p>Nenhuma venda registrada hoje.</p>';
+              return;
+          }
+
+          const table = document.createElement('table');
+          table.className = 'tabela-historico'
+          table.innerHTML = `
+              <thead>
+                  <tr>
+                      <th>ID Venda</th>
+                      <th>Horário</th>
+                      <th>Cliente</th>
+                      <th>Valor Total</th>
+                      <th>Ação</th>
+                  </tr>
+              </thead>
+              <tbody></tbody>
+          `;
+          const tbody = table.querySelector('tbody');
+          vendas.forEach(venda => {
+              const data = new Date(venda.data);
+              tbody.innerHTML += `
+                  <tr>
+                      <td>#${venda.id}</td>
+                      <td>${data.toLocaleTimeString('pt-BR')}</td>
+                      <td>${venda.cliente}</td>
+                      <td>R$ ${venda.total.toFixed(2)}</td>
+                      <td><a href="/recibo/${venda.id}" target="_blank">Ver Recibo</a></td>
+                  </tr>
+              `;
+          });
+          container.appendChild(table);
+          // Estilo básico para a tabela
+          table.style.width = '100%';
+          table.style.borderCollapse = 'collapse';
+          } catch (error) {
+            document.getElementById('historico-vendas-dia').innerHTML = `<p style="color:red;">${error.message}</p>`;
             }
         }
 
         window.onload = () => {
             carregarAgendamentos();
             carregarTodosProdutosParaVenda();
+            carregarVendasRecentes();
         };
+    
   </script>
 
 </body>
