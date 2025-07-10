@@ -468,5 +468,45 @@ def api_vendas_recentes():
     ]
     return vendas
 
+@app.route('/produtos-cliente')
+def produtos_cliente():
+    if 'usuario' not in session or session.get('tipo') != 'cliente':
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'produtos_cliente.html'))
+
+@app.route('/api/produtos-cliente')
+def api_produtos_cliente():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return {"erro": "Não autorizado"}, 401
+
+    produtos = produto_controller.dao.listar()
+    return [
+        {
+            "id": p.id,
+            "nome": p.nome,
+            "descricao": p.descricao,
+            "preco": p.preco,
+            "estoque": p.estoque
+        }
+        for p in produtos
+    ]
+
+@app.route('/api/compra-cliente', methods=['POST'])
+def api_compra_cliente():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return jsonify({"erro": "Não autorizado"}), 403
+
+    dados = request.get_json()
+    itens = dados.get('itens')
+    cliente_id = get_cliente_id()
+
+    if not cliente_id or not itens:
+        return jsonify({"erro": "Dados incompletos"}), 400
+
+    venda_id = vendas_controller.compra_por_cliente(cliente_id, itens)
+    if venda_id:
+        return jsonify({"mensagem": "Compra realizada com sucesso!", "venda_id": venda_id})
+    return jsonify({"erro": "Erro ao processar compra"}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)
