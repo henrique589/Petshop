@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Recibo de Venda</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .recibo {
+            width: 80mm; /* Largura comum para impressoras térmicas */
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border: 1px solid #ccc;
+        }
+        .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
+        .header h2 { margin: 0; }
+        .info { font-size: 12px; margin-bottom: 15px; }
+        .info p { margin: 4px 0; }
+        .itens-tabela { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .itens-tabela th, .itens-tabela td { padding: 5px; text-align: left; }
+        .itens-tabela .head { border-bottom: 1px dashed #000; }
+        .itens-tabela .total { border-top: 1px dashed #000; font-weight: bold; }
+        .footer { text-align: center; margin-top: 20px; font-size: 11px; }
+        .no-print { margin-top: 20px; text-align: center; }
+        .no-print button { padding: 10px 20px; cursor: pointer; }
+        @media print {
+            body { background-color: #fff; }
+            .no-print { display: none; }
+            .recibo { margin: 0; box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="recibo" id="recibo-container">
+        <p>Carregando dados do recibo...</p>
+    </div>
+
+    <div class="no-print">
+        <button onclick="window.print()">Imprimir Recibo</button>
+    </div>
+
+    <script>
+        async function carregarRecibo() {
+            const container = document.getElementById('recibo-container');
+            const vendaId = window.location.pathname.split('/').pop();
+
+            if (!vendaId) {
+                container.innerHTML = '<p>ID da venda não encontrado.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/recibo/${vendaId}`);
+                if (!response.ok) {
+                    const erro = await response.json();
+                    throw new Error(erro.erro || 'Falha ao buscar dados do recibo.');
+                }
+                const data = await response.json();
+
+                const dataVenda = new Date(data.data_venda).toLocaleString('pt-BR');
+
+                let itensHtml = '';
+                data.itens.forEach(item => {
+                    itensHtml += `
+                        <tr>
+                            <td>${item.quantidade}x</td>
+                            <td>${item.produto_nome}</td>
+                            <td>${item.preco_unitario.toFixed(2)}</td>
+                            <td>${(item.quantidade * item.preco_unitario).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                container.innerHTML = `
+                    <div class="header">
+                        <h2>PETSHOP FELIZ</h2>
+                        <p>Recibo de Venda</p>
+                    </div>
+                    <div class="info">
+                        <p><strong>Venda ID:</strong> #${data.id}</p>
+                        <p><strong>Data:</strong> ${dataVenda}</p>
+                        <p><strong>Cliente:</strong> ${data.cliente_nome || 'Não informado'}</p>
+                        <p><strong>Atendido por:</strong> ${data.funcionario_nome || 'N/A'}</p>
+                    </div>
+                    <table class="itens-tabela">
+                        <tr class="head">
+                            <th>Qtd</th>
+                            <th>Item</th>
+                            <th>Vl. Unit.</th>
+                            <th>Subtotal</th>
+                        </tr>
+                        ${itensHtml}
+                        <tr class="total">
+                            <td colspan="3">TOTAL</td>
+                            <td>R$ ${data.valor_total.toFixed(2)}</td>
+                        </tr>
+                    </table>
+                    <div class="footer">
+                        <p>Obrigado pela preferência!</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                container.innerHTML = `<p style="color: red;">${error.message}</p>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', carregarRecibo);
+    </script>
+
+</body>
+</html>
