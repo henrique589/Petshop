@@ -28,3 +28,16 @@ class VendaController:
             {"id": v[0], "data": v[1], "total": v[2], "cliente": v[3]} for v in vendas
         ]
 
+    def compra_por_cliente(self, cliente_id, itens_carrinho):
+        valor_total = sum(item['preco'] * item['quantidade'] for item in itens_carrinho)
+
+        nova_venda = Venda(
+            cliente_id=cliente_id,
+            funcionario_id=None,  
+            valor_total=valor_total
+        )
+        nova_venda.itens = itens_carrinho
+
+        venda_id = self.venda_dao.registrar_venda(nova_venda)
+
+        return venda_id
