@@ -55,3 +55,20 @@ class VendaDAO:
         vendas = cursor.fetchall()
         conn.close()
         return vendas
+    
+    def listar_todas_vendas(self):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT v.id,
+                strftime('%Y-%m-%d %H:%M', v.data_venda) as data_venda,
+                v.valor_total,
+                u.nome
+            FROM vendas v
+            LEFT JOIN clientes c ON v.cliente_id = c.id
+            LEFT JOIN usuarios u ON c.usuario_id = u.id
+            ORDER BY v.data_venda DESC
+        ''')
+        vendas = cursor.fetchall()
+        conn.close()
+        return vendas

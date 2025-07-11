@@ -10,6 +10,9 @@ from controller.cliente_controller import ClienteController
 from database.cliente_dao import ClienteDAO
 from controller.venda_controller import VendaController
 from database.venda_dao import VendaDAO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import io
 import os
 
 app = Flask(__name__)
@@ -231,7 +234,6 @@ def api_excluir_usuario():
 
 @app.route('/api/servicos')
 def api_listar_servicos():
-    # MODIFICAÇÃO: Permitir o cliente a listar os serviços também:
     if 'usuario' not in session or session.get('tipo') not in ['gerente', 'cliente']:
         return {"erro": "Não autorizado"}, 403
 
@@ -309,7 +311,6 @@ def api_listar_produtos():
         }
         for p in produtos
     ]
-
 
 @app.route('/api/produtos', methods=['POST'])
 def api_criar_produto():
@@ -467,6 +468,38 @@ def api_vendas_recentes():
         for venda in vendas_dia
     ]
     return vendas
+
+@app.route('/gerar-relatorio-faturamento')
+def gerar_relatorio_faturamento():
+    vendas = VendaController().listar_todas_vendas()
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+    largura, altura = letter
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(50, altura - 50, "Relatório de Faturamento - PetShop")
+
+    y = altura - 100
+    total_geral = 0
+
+    pdf.setFont("Helvetica", 12)
+    for venda in vendas:
+        data = venda['data']
+        cliente = venda['cliente']
+        valor = venda['total']
+        pdf.drawString(50, y, f"{data} - Cliente: {cliente or 'Não identificado'} - R$ {valor:.2f}")
+        y -= 20
+        total_geral += valor
+        if y < 80:
+            pdf.showPage()
+            y = altura - 50
+
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, y - 30, f"Total de Vendas: R$ {total_geral:.2f}")
+
+    pdf.save()
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name="relatorio_faturamento.pdf", mimetype='application/pdf')
 
 if __name__ == '__main__':
     app.run(debug=True)
