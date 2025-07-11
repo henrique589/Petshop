@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Produtos para Pets</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #fff;
+      color: #333;
+      position: relative;
+      min-height: 100vh;
+      padding-bottom: 80px; /* Adicionado para não sobrepor o botão de voltar */
+    }
+
+    h2, h3 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .titulo-grande::after {
+      content: '';
+      display: block;
+      width: 280px; /* Ajustado para o título */
+      height: 4px;
+      background-color: #c00;
+      margin-top: 8px;
+      border-radius: 2px;
+    }
+
+    .titulo-medio::after {
+      content: '';
+      display: block;
+      width: 160px;
+      height: 4px;
+      background-color: #c00;
+      margin-top: 8px;
+      border-radius: 2px;
+    }
+    
+    .card {
+      background-color: #fefefe;
+      border: 1px solid #ccc;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      width: 250px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-align: center;
+      text-decoration: none;
+      color: white;
+    }
+
+    .btn-primary {
+      background-color: #4f5255;
+      color: white;
+      width: 100%; /* Ocupa toda a largura do card */
+    }
+
+    .btn-primary:hover {
+      background-color: #1b8805;
+    }
+
+    .btn-fixed {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: #333;
+      z-index: 100;
+    }
+
+    .btn-fixed:hover {
+      background-color: #530909ee;
+    }
+
+    hr {
+      margin: 40px 0 20px;
+    }
+
+    /* --- Estilos específicos para a página de produtos --- */
+    #container-principal {
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+    }
+
+    #lista-produtos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        flex-grow: 1;
+    }
+
+    .produto-info {
+        flex-grow: 1; /* Faz a descrição ocupar o espaço disponível */
+        margin-bottom: 15px;
+    }
+
+    .produto-info strong {
+        font-size: 1.2em;
+        color: #333;
+    }
+
+    .produto-info .descricao {
+        font-size: 0.9em;
+        color: #666;
+        margin: 5px 0;
+    }
+
+    .produto-info .preco {
+        font-weight: bold;
+        color: #c00;
+        font-size: 1.1em;
+        margin-bottom: 10px;
+    }
+    
+    .produto-compra {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .produto-compra input {
+        width: 50px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .carrinho-container {
+      min-width: 300px;
+      max-width: 350px;
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    #lista-carrinho {
+        list-style-type: none;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+
+    #lista-carrinho li {
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    #total {
+        font-size: 1.3em;
+        font-weight: bold;
+        text-align: right;
+        margin-bottom: 20px;
+    }
+
+  </style>
+</head>
+
+<body>
+  <h2 class="titulo-grande">Produtos Disponíveis</h2>
+  
+  <div id="container-principal">
+    <div id="lista-produtos">
+        </div>
+  
+    <div class="carrinho-container">
+      <h3 class="titulo-medio">Carrinho</h3>
+      <ul id="lista-carrinho">
+        <p>Seu carrinho está vazio.</p>
+      </ul>
+      <p id="total">Total: R$ 0.00</p>
+      <button class="btn btn-primary" onclick="finalizarCompra()">Finalizar Compra</button>
+    </div>
+  </div>
+
+
+  <a href="/perfil" class="btn btn-fixed">Voltar ao Perfil</a>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const carrinho = [];
+
+    async function carregarProdutos() {
+      try {
+        const res = await fetch('/api/produtos-cliente');
+        const produtos = await res.json();
+        const lista = document.getElementById('lista-produtos');
+        lista.innerHTML = '';
+
+        produtos.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="produto-info">
+              <strong>${p.nome}</strong><br>
+              <p class="descricao">${p.descricao}</p>
+              <p class="preco">R$ ${p.preco.toFixed(2)}</p>
+              <small>Estoque: ${p.estoque}</small>
+            </div>
+            <div class="produto-compra">
+              <input type="number" min="1" max="${p.estoque}" value="1" id="qtd-${p.id}">
+              <button class="btn btn-primary" onclick="adicionar(${p.id}, '${p.nome}', ${p.preco})">Adicionar</button>
+            </div>
+          `;
+          lista.appendChild(card);
+        });
+      } catch (error) {
+        console.error("Falha ao carregar produtos:", error);
+        document.getElementById('lista-produtos').innerHTML = "<p>Não foi possível carregar os produtos. Tente novamente mais tarde.</p>";
+      }
+    }
+
+    function adicionar(id, nome, preco) {
+      const inputQtd = document.getElementById(`qtd-${id}`);
+      const qtd = parseInt(inputQtd.value);
+
+      if (isNaN(qtd) || qtd < 1) {
+        Swal.fire('Quantidade inválida', 'Por favor, insira um número maior que zero.', 'warning');
+        return;
+      }
+
+      const itemExistente = carrinho.find(item => item.id === id);
+      if (itemExistente) {
+        itemExistente.quantidade += qtd;
+      } else {
+        carrinho.push({ id, nome, preco, quantidade: qtd });
+      }
+      renderizarCarrinho();
+      Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Produto adicionado!',
+          showConfirmButton: false,
+          timer: 1500
+      });
+    }
+
+    function renderizarCarrinho() {
+      const lista = document.getElementById('lista-carrinho');
+      const totalEl = document.getElementById('total');
+      lista.innerHTML = '';
+      let total = 0;
+
+      if (carrinho.length === 0) {
+        lista.innerHTML = '<p>Seu carrinho está vazio.</p>';
+        totalEl.textContent = 'Total: R$ 0.00';
+        return;
+      }
+
+      carrinho.forEach(item => {
+        const li = document.createElement('li');
+        const subtotal = item.preco * item.quantidade;
+        total += subtotal;
+        li.textContent = `${item.quantidade}x ${item.nome} - R$ ${subtotal.toFixed(2)}`;
+        lista.appendChild(li);
+      });
+      totalEl.textContent = `Total: R$ ${total.toFixed(2)}`;
+    }
+
+    async function finalizarCompra() {
+      if (carrinho.length === 0) {
+        Swal.fire('Carrinho Vazio', 'Adicione produtos ao carrinho antes de finalizar a compra.', 'info');
+        return;
+      }
+
+      const itens = carrinho.map(i => ({
+        id: i.id,
+        quantidade: i.quantidade,
+        preco: i.preco
+      }));
+
+      try {
+        const res = await fetch('/api/compra-cliente', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itens })
+        });
+
+        if (res.ok) {
+          await Swal.fire('Compra realizada!', 'Sua compra foi finalizada com sucesso.', 'success');
+          location.reload();
+        } else {
+          const erro = await res.json();
+          Swal.fire("Erro ao finalizar compra", erro.erro || 'Não foi possível processar sua compra.', 'error');
+        }
+      } catch (error) {
+          Swal.fire("Erro de conexão", "Não foi possível conectar ao servidor. Verifique sua internet.", 'error');
+      }
+    }
+
+    carregarProdutos();
+  </script>
+</body>
+
+</html>
