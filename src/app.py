@@ -541,5 +541,45 @@ def api_compra_cliente():
         return jsonify({"mensagem": "Compra realizada com sucesso!", "venda_id": venda_id})
     return jsonify({"erro": "Erro ao processar compra"}), 500
 
+@app.route('/api/historico-compras')
+def api_historico_compras():
+    if 'usuario' not in session or session.get('tipo') != 'cliente':
+        return jsonify({"erro": "Não autorizado"}), 403
+
+    cliente_id = get_cliente_id()
+    if not cliente_id:
+        return jsonify({"erro": "Cliente não encontrado"}), 404
+    
+    historico = vendas_controller.obter_historico_cliente(cliente_id)
+
+    if historico is not None:
+        return jsonify(historico)
+    else:
+        return jsonify({"erro": "Erro ao buscar histórico de compras"}), 500
+    
+@app.route('/historico-compras')
+def historico_compras_page():
+    if 'usuario' not in session or session.get('tipo') != 'cliente':
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'historico_compras.html'))
+
+@app.route('/api/recibo/<int:venda_id>')
+def api_recibo_detalhes(venda_id):
+    if 'usuario' not in session or session.get('tipo') not in ['funcionario', 'gerente']:
+        return jsonify({"erro": "Não autorizado"}), 403
+
+    recibo_data = vendas_controller.obter_detalhes_recibo(venda_id)
+
+    if recibo_data:
+        return jsonify(recibo_data)
+    else:
+        return jsonify({"erro": "Venda não encontrada"}), 404
+
+@app.route('/recibo/<int:venda_id>')
+def pagina_recibo(venda_id):
+    if 'usuario' not in session or session.get('tipo') not in ['funcionario', 'gerente']:
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'recibo.html'))
+
 if __name__ == '__main__':
     app.run(debug=True)

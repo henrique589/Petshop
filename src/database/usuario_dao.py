@@ -65,3 +65,23 @@ class UsuarioDAO:
         cursor.execute('DELETE FROM usuarios WHERE id = ?', (id,))
         conn.commit()
         conn.close()
+
+    def get_funcionario_id_por_email(self, email):
+        conn = sqlite3.connect(self.db_path) 
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                SELECT f.id FROM funcionarios f
+                JOIN usuarios u ON f.usuario_id = u.id
+                WHERE u.email = ?
+            ''', (email,))
+            resultado = cursor.fetchone()
+            
+            return resultado[0] if resultado else None
+
+        except sqlite3.Error as e:
+            print(f"Erro ao buscar ID do funcionário por email: {e}")
+            return None
+        finally:
+            conn.close()

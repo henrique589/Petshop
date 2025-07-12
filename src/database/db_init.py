@@ -92,7 +92,7 @@ def criar_tabelas():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             cliente_id INTEGER,
             funcionario_id INTEGER,
-            data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            data_venda TIMESTAMP NOT NULL,
             valor_total REAL NOT NULL,
             FOREIGN KEY (cliente_id) REFERENCES clientes(id),
             FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
