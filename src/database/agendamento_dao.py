@@ -137,3 +137,13 @@ class AgendamentoDAO:
         ]
 
 
+def atualizar_agendamento(self, agendamento: Agendamento):
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE agendamentos
+            SET pet_id = ?, servico_id = ?, data = ?, hora = ?
+            WHERE id = ?
+        ''', (agendamento.pet_id, agendamento.servico_id, agendamento.data, agendamento.hora, agendamento.id))
+        conn.commit()
+        conn.close()

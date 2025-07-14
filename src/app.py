@@ -598,5 +598,42 @@ def pagina_recibo(venda_id):
         return redirect('/')
     return send_file(os.path.join(HTML_DIR, 'recibo.html'))
 
+@app.route('/api/editar-agendamento', methods=['POST'])
+def api_editar_agendamento_cliente():
+    if 'usuario' not in session or session['tipo'] not in ['cliente', 'gerente', 'funcionario']:
+        return {"erro": "Não autorizado"}, 401
+
+    try:
+        agendamento_id = int(request.form['id'])
+        pet_id = int(request.form['pet_id'])
+        servico_id = int(request.form['servico_id'])
+        data = request.form['data']
+        hora = request.form['hora']
+
+        cliente_controller.editar_agendamento_web(agendamento_id, pet_id, servico_id, data, hora)
+        return '', 204
+
+    except ValueError as e:
+        return {"erro": str(e)}, 400
+    except Exception as e:
+        return {"erro": "Erro interno: " + str(e)}, 500
+
+@app.route('/api/horarios-disponiveis')
+def api_horarios_disponiveis():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return {"erro": "Não autorizado"}, 401
+
+    data = request.args.get('data')
+    hora = request.args.get('hora')
+
+    if not data or not hora:
+        return {"erro": "Parâmetros 'data' e 'hora' são obrigatórios."}, 400
+
+    try:
+        horarios = cliente_controller.horarios_disponiveis(data, hora)
+        return {"horarios": horarios}
+    except Exception as e:
+        return {"erro": str(e)}, 500
+
 if __name__ == '__main__':
     app.run(debug=True)
