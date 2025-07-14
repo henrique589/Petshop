@@ -34,7 +34,7 @@ def test_cadastro_pet(page: Page):
     page.fill('input[name="email"]', "teste@example.com")
     page.fill('input[name="senha"]', "1")
     page.click('button[type="submit"]')
-    page.goto(BASE_URL + "/cadastro-pet")
+    page.goto(BASE_URL + "/perfil")
 
     page.fill('input[name="nome"]', "Theo")
     page.fill('input[name="raca"]', "Spitz Alemão")
