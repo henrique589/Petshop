@@ -267,10 +267,31 @@
         const li = document.createElement('li');
         const subtotal = item.preco * item.quantidade;
         total += subtotal;
-        li.textContent = `${item.quantidade}x ${item.nome} - R$ ${subtotal.toFixed(2)}`;
+        li.innerHTML = `
+        ${item.quantidade}x ${item.nome} - R$ ${subtotal.toFixed(2)}
+        <button onclick="removerDoCarrinho(${item.id})" style="margin-left: 10px; background: red; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer;">
+          Remover
+        </button>
+        `;
         lista.appendChild(li);
       });
       totalEl.textContent = `Total: R$ ${total.toFixed(2)}`;
+    }
+
+    function removerDoCarrinho(id) {
+      const index = carrinho.findIndex(item => item.id === id);
+      if (index !== -1) {
+        carrinho.splice(index, 1);
+        renderizarCarrinho();
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'info',
+          title: 'Produto removido do carrinho.',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
     }
 
     async function finalizarCompra() {
