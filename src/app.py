@@ -451,6 +451,23 @@ def api_registrar_venda():
     else:
         return jsonify({"erro": "Não foi possível registrar a venda."}), 500
 
+@app.route('/registrar-usuario', methods=['POST'])
+def registrar_usuario():
+    nome = request.form['nome']
+    email = request.form['email']
+    senha = request.form['senha']
+    tipo = request.form['tipo']
+
+    telefone = request.form.get('telefone')
+    cpf = request.form.get('cpf')
+
+    if tipo == 'cliente':
+        usuario_controller.cadastrar_cliente(nome, email, senha, telefone, cpf)
+    else:
+        usuario_controller.criar_usuario(nome, email, senha, tipo)
+
+    return redirect('/painel-gerente')
+
 @app.route('/api/vendas/recentes')
 def api_vendas_recentes():
     if 'usuario' not in session or session.get('tipo') not in ['gerente', 'funcionario']:
