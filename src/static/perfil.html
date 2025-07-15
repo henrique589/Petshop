@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8">
   <title>Perfil do Cliente</title>
   <style>
@@ -50,21 +51,21 @@
     }
 
     .btn-primary {
-      background-color: #4f5255;
+      background-color: #2d831c !important;      
       color: white;
     }
 
     .btn-primary:hover {
-      background-color: #1b8805;
+      background-color: #114707 !important;    
     }
 
     .btn-secondary {
-      background-color: #6c757d;
+      background-color: #9b1717 !important;
       color: white;
     }
 
     .btn-secondary:hover {
-      background-color: #8f0e0e;
+      background-color: #700c0c !important;
     }
 
     .titulo-grande::after {
@@ -183,11 +184,26 @@
       z-index: 100;
     }
 
+    .btn-produtos {
+      margin-left: 100px;
+    }
+
+     .btn-produtos:hover {
+      background-color: #530909e5;
+    }
+
     .btn-servicos {
       left: 20px;
     }
 
     .btn-servicos:hover {
+      background-color: #530909e5;
+    }
+
+    .btn-historico {
+        left: 265px;
+    }
+    .btn-historico:hover {
       background-color: #530909e5;
     }
 
@@ -220,9 +236,16 @@
     </div>
   </form>
 
-
   <form action="/servicos-cliente" method="get">
     <button class="btn-fixed btn-servicos" type="submit">Serviços</button>
+  </form>
+  
+  <form action="/produtos-cliente" method="get">
+    <button class="btn-fixed btn-produtos" type="submit">Produtos</button>
+  </form>
+
+  <form action="/historico-compras" method="get">
+    <button class="btn-fixed btn-historico" type="submit">Histórico</button>
   </form>
 
   <form action="/logout" method="get">
@@ -253,8 +276,8 @@
               <strong>Idade:</strong> ${pet.idade} anos<br>
               <strong>Peso:</strong> ${pet.peso} kg<br>
               <strong>Tipo:</strong> ${pet.tipo_animal}<br>
-              <button onclick='editarPet(${JSON.stringify(pet)})'>Editar</button>
-              <button onclick='excluirPet(${pet.id_pet})'>Excluir</button>
+              <button onclick='editarPet(${JSON.stringify(pet)})' class="btn btn-primary">Editar</button>
+              <button onclick='excluirPet(${pet.id_pet})' class="btn btn-secondary">Excluir</button>
             `;
             container.appendChild(card);
           });

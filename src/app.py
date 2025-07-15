@@ -10,6 +10,9 @@ from controller.cliente_controller import ClienteController
 from database.cliente_dao import ClienteDAO
 from controller.venda_controller import VendaController
 from database.venda_dao import VendaDAO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import io
 import os
 
 app = Flask(__name__)
@@ -231,7 +234,6 @@ def api_excluir_usuario():
 
 @app.route('/api/servicos')
 def api_listar_servicos():
-    # MODIFICAÇÃO: Permitir o cliente a listar os serviços também:
     if 'usuario' not in session or session.get('tipo') not in ['gerente', 'cliente']:
         return {"erro": "Não autorizado"}, 403
 
@@ -309,7 +311,6 @@ def api_listar_produtos():
         }
         for p in produtos
     ]
-
 
 @app.route('/api/produtos', methods=['POST'])
 def api_criar_produto():
@@ -450,6 +451,23 @@ def api_registrar_venda():
     else:
         return jsonify({"erro": "Não foi possível registrar a venda."}), 500
 
+@app.route('/registrar-usuario', methods=['POST'])
+def registrar_usuario():
+    nome = request.form['nome']
+    email = request.form['email']
+    senha = request.form['senha']
+    tipo = request.form['tipo']
+
+    telefone = request.form.get('telefone')
+    cpf = request.form.get('cpf')
+
+    if tipo == 'cliente':
+        usuario_controller.cadastrar_cliente(nome, email, senha, telefone, cpf)
+    else:
+        usuario_controller.criar_usuario(nome, email, senha, tipo)
+
+    return redirect('/painel-gerente')
+
 @app.route('/api/vendas/recentes')
 def api_vendas_recentes():
     if 'usuario' not in session or session.get('tipo') not in ['gerente', 'funcionario']:
@@ -467,6 +485,155 @@ def api_vendas_recentes():
         for venda in vendas_dia
     ]
     return vendas
+
+@app.route('/gerar-relatorio-faturamento')
+def gerar_relatorio_faturamento():
+    vendas = VendaController().listar_todas_vendas()
+    buffer = io.BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=letter)
+    largura, altura = letter
+
+    pdf.setFont("Helvetica-Bold", 16)
+    pdf.drawString(50, altura - 50, "Relatório de Faturamento - PetShop")
+
+    y = altura - 100
+    total_geral = 0
+
+    pdf.setFont("Helvetica", 12)
+    for venda in vendas:
+        data = venda['data']
+        cliente = venda['cliente']
+        valor = venda['total']
+        pdf.drawString(50, y, f"{data} - Cliente: {cliente or 'Não identificado'} - R$ {valor:.2f}")
+        y -= 20
+        total_geral += valor
+        if y < 80:
+            pdf.showPage()
+            y = altura - 50
+
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, y - 30, f"Total de Vendas: R$ {total_geral:.2f}")
+
+    pdf.save()
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name="relatorio_faturamento.pdf", mimetype='application/pdf')
+
+@app.route('/produtos-cliente')
+def produtos_cliente():
+    if 'usuario' not in session or session.get('tipo') != 'cliente':
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'produtos_cliente.html'))
+
+@app.route('/api/produtos-cliente')
+def api_produtos_cliente():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return {"erro": "Não autorizado"}, 401
+
+    produtos = produto_controller.dao.listar()
+    return [
+        {
+            "id": p.id,
+            "nome": p.nome,
+            "descricao": p.descricao,
+            "preco": p.preco,
+            "estoque": p.estoque
+        }
+        for p in produtos
+    ]
+
+@app.route('/api/compra-cliente', methods=['POST'])
+def api_compra_cliente():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return jsonify({"erro": "Não autorizado"}), 403
+
+    dados = request.get_json()
+    itens = dados.get('itens')
+    cliente_id = get_cliente_id()
+
+    if not cliente_id or not itens:
+        return jsonify({"erro": "Dados incompletos"}), 400
+
+    venda_id = vendas_controller.compra_por_cliente(cliente_id, itens)
+    if venda_id:
+        return jsonify({"mensagem": "Compra realizada com sucesso!", "venda_id": venda_id})
+    return jsonify({"erro": "Erro ao processar compra"}), 500
+
+@app.route('/api/historico-compras')
+def api_historico_compras():
+    if 'usuario' not in session or session.get('tipo') != 'cliente':
+        return jsonify({"erro": "Não autorizado"}), 403
+
+    cliente_id = get_cliente_id()
+    if not cliente_id:
+        return jsonify({"erro": "Cliente não encontrado"}), 404
+    
+    historico = vendas_controller.obter_historico_cliente(cliente_id)
+
+    if historico is not None:
+        return jsonify(historico)
+    else:
+        return jsonify({"erro": "Erro ao buscar histórico de compras"}), 500
+    
+@app.route('/historico-compras')
+def historico_compras_page():
+    if 'usuario' not in session or session.get('tipo') != 'cliente':
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'historico_compras.html'))
+
+@app.route('/api/recibo/<int:venda_id>')
+def api_recibo_detalhes(venda_id):
+    if 'usuario' not in session or session.get('tipo') not in ['funcionario', 'gerente']:
+        return jsonify({"erro": "Não autorizado"}), 403
+
+    recibo_data = vendas_controller.obter_detalhes_recibo(venda_id)
+
+    if recibo_data:
+        return jsonify(recibo_data)
+    else:
+        return jsonify({"erro": "Venda não encontrada"}), 404
+
+@app.route('/recibo/<int:venda_id>')
+def pagina_recibo(venda_id):
+    if 'usuario' not in session or session.get('tipo') not in ['funcionario', 'gerente']:
+        return redirect('/')
+    return send_file(os.path.join(HTML_DIR, 'recibo.html'))
+
+@app.route('/api/editar-agendamento', methods=['POST'])
+def api_editar_agendamento_cliente():
+    if 'usuario' not in session or session['tipo'] not in ['cliente', 'gerente', 'funcionario']:
+        return {"erro": "Não autorizado"}, 401
+
+    try:
+        agendamento_id = int(request.form['id'])
+        pet_id = int(request.form['pet_id'])
+        servico_id = int(request.form['servico_id'])
+        data = request.form['data']
+        hora = request.form['hora']
+
+        cliente_controller.editar_agendamento_web(agendamento_id, pet_id, servico_id, data, hora)
+        return '', 204
+
+    except ValueError as e:
+        return {"erro": str(e)}, 400
+    except Exception as e:
+        return {"erro": "Erro interno: " + str(e)}, 500
+
+@app.route('/api/horarios-disponiveis')
+def api_horarios_disponiveis():
+    if 'usuario' not in session or session['tipo'] != 'cliente':
+        return {"erro": "Não autorizado"}, 401
+
+    data = request.args.get('data')
+    hora = request.args.get('hora')
+
+    if not data or not hora:
+        return {"erro": "Parâmetros 'data' e 'hora' são obrigatórios."}, 400
+
+    try:
+        horarios = cliente_controller.horarios_disponiveis(data, hora)
+        return {"horarios": horarios}
+    except Exception as e:
+        return {"erro": str(e)}, 500
 
 if __name__ == '__main__':
     app.run(debug=True)

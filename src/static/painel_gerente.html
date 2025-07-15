@@ -92,6 +92,19 @@
       z-index: 100;
     }
 
+    .botao-relatorio {
+      display: inline-block;
+      background-color: #c00; 
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
     .btn-servicos {
       left: 20px;
     }
@@ -110,20 +123,27 @@
 
   <div id="usuarios"></div>
 
-  <h3 id="form-title">Adicionar Novo Usuário</h3>
-  <form id="form-usuario">
-    <input type="hidden" name="id" id="id">
-    <input type="text" name="nome" placeholder="Nome" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="senha" placeholder="Senha" required>
-    <select name="tipo" required>
-      <option value="cliente">Cliente</option>
-      <option value="funcionario">Funcionário</option>
-      <option value="gerente">Gerente</option>
-    </select>
-    <button type="submit">Salvar</button>
-    <button type="button" onclick="cancelarEdicao()">Cancelar</button>
-  </form>
+<h3 id="form-title">Adicionar Novo Usuário</h3>
+<form id="form-usuario">
+  <input type="hidden" name="id" id="id">
+  <input type="text" name="nome" placeholder="Nome" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <input type="password" name="senha" placeholder="Senha" required>
+  <div id="campos-cliente" style="display: none;">
+    <input type="text" name="telefone" placeholder="Telefone">
+    <input type="text" name="cpf" placeholder="CPF">
+  </div>
+
+  <select name="tipo" id="tipo" required onchange="mostrarCamposCliente()">
+    <option value="cliente">Cliente</option>
+    <option value="funcionario">Funcionário</option>
+    <option value="gerente">Gerente</option>
+  </select>
+
+
+  <button type="submit">Salvar</button>
+  <button type="button" onclick="cancelarEdicao()">Cancelar</button>
+</form>
 
   <form action="/painel-servicos" method="get">
     <button class="btn-fixed btn-servicos" type="submit">Serviços</button>
@@ -132,6 +152,10 @@
   <form action="/painel-produtos" method="get">
     <button class="btn-fixed btn-produtos" type="submit">Produtos</button>
   </form>
+
+  <a href="/gerar-relatorio-faturamento" class="botao-relatorio" target="_blank">
+    Relatório de Faturamento (PDF)
+  </a>
 
   <form action="/logout" method="get">
     <button class="btn-fixed btn-sair" type="submit">Sair</button>
@@ -167,12 +191,14 @@
       document.querySelector('[name="email"]').value = u.email;
       document.querySelector('[name="senha"]').value = '';
       document.querySelector('[name="tipo"]').value = u.tipo;
+      mostrarCamposCliente();
     }
 
     function cancelarEdicao() {
       document.getElementById('form-title').innerText = 'Adicionar Novo Usuário';
       document.getElementById('form-usuario').reset();
       document.getElementById('id').value = '';
+      mostrarCamposCliente();
     }
 
     function excluir(id) {
@@ -181,6 +207,12 @@
       formData.append('id', id);
       fetch('/api/excluir-usuario', { method: 'POST', body: formData })
         .then(() => carregarUsuarios());
+    }
+
+    function mostrarCamposCliente() {
+      const tipo = document.getElementById('tipo').value;
+      const campos = document.getElementById('campos-cliente');
+      campos.style.display = tipo === 'cliente' ? 'block' : 'none';
     }
 
     document.getElementById('form-usuario').addEventListener('submit', function(e) {
@@ -194,7 +226,10 @@
         });
     });
 
-    carregarUsuarios();
+    window.onload = () => {
+      mostrarCamposCliente();
+      carregarUsuarios();
+    };
   </script>
 </body>
 </html>

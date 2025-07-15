@@ -91,8 +91,8 @@ def criar_tabelas():
         CREATE TABLE vendas (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             cliente_id INTEGER,
-            funcionario_id INTEGER NOT NULL,
-            data_venda TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            funcionario_id INTEGER,
+            data_venda TIMESTAMP NOT NULL,
             valor_total REAL NOT NULL,
             FOREIGN KEY (cliente_id) REFERENCES clientes(id),
             FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id)
@@ -113,8 +113,8 @@ def criar_tabelas():
 
     cursor.execute('''
         INSERT OR IGNORE INTO usuarios (id, nome, email, senha, tipo)
-        VALUES (1, 'Administrador', 'admin@petshop.com', ?, 'gerente')
-    ''', (gerar_senha('admin123'),))
+        VALUES (1, 'Administrador', 'admin@petshop.com', '1', 'gerente')
+    ''')
 
     conn.commit()
     conn.close()
