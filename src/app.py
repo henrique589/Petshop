@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for, session, send_file, jsonify
+from flask import Flask, request, render_template ,redirect, url_for, session, send_file, jsonify
 from sqlite3 import IntegrityError
 from controller.usuario_controller import UsuarioController
 from controller.pet_controller import PetController
@@ -11,6 +11,7 @@ from database.cliente_dao import ClienteDAO
 from controller.venda_controller import VendaController
 from database.venda_dao import VendaDAO
 from reportlab.lib.pagesizes import letter
+import sqlite3
 from reportlab.pdfgen import canvas
 import io
 import os
@@ -40,11 +41,14 @@ def get_cliente_id():
 
 @app.route('/')
 def index():
-    if 'usuario' in session:
-        if session['tipo'] == 'cliente':
+    tipo = session.get('tipo')
+    if session.get('usuario') and tipo:
+        if tipo == 'cliente':
             return redirect('/perfil')
-        elif session['tipo'] == 'funcionario':
+        elif tipo == 'funcionario':
             return redirect('/painel-funcionario')
+        elif tipo == 'gerente':
+            return redirect('/painel-gerente')
     return send_file(os.path.join(HTML_DIR, 'login.html'))
 
 
@@ -53,38 +57,54 @@ def cadastro_get():
     return send_file(os.path.join(HTML_DIR, 'cadastro.html'))
 
 
-@app.route('/cadastro', methods=['POST'])
-def cadastro_post():
-    try:
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
+    if request.method == 'POST':
         nome = request.form['nome']
         email = request.form['email']
         senha = request.form['senha']
         telefone = request.form['telefone']
         cpf = request.form['cpf']
 
-        usuario_controller.cadastrar_cliente(nome, email, senha, telefone, cpf)
-        return "Cliente cadastrado com sucesso! <a href='/'>Voltar para login</a>"
-    except IntegrityError:
-        return redirect("/cadastro?erro=email")
+        try:
+            usuario_controller = UsuarioController()
+            usuario_controller.cadastrar_cliente(nome, email, senha, telefone, cpf)
+            return redirect(url_for('cadastro', sucesso=1))
+
+        except sqlite3.IntegrityError as e:
+            print(f"[ERRO INTEGRIDADE] Provavelmente email ou CPF já existe: {e}")
+            return redirect(url_for('cadastro', erro='duplicado'))
+
+        except Exception as e:
+            print(f"[ERRO GERAL] Erro inesperado no cadastro: {e}")
+            return redirect(url_for('cadastro', erro='geral'))
+
+    return render_template('cadastro.html')
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
-    email = request.form['email']
-    senha = request.form['senha']
+    if request.method == 'POST':
+        email = request.form['email']
+        senha = request.form['senha']
 
-    tipo = usuario_controller.login_usuario(email, senha)
-    if tipo:
-        session['usuario'] = email
-        session['tipo'] = tipo
+        controller = UsuarioController()
+        tipo = controller.login_usuario(email, senha)
 
-        if tipo == 'cliente':
-            return redirect('/perfil')
-        if tipo == 'funcionario':
-            return redirect('/painel-funcionario')
-        if tipo == 'gerente':
-            return redirect('/painel-gerente')
-    return "Usuário ou senha inválidos. <a href='/'>Tentar novamente</a>"
+        if tipo:
+            session['usuario'] = email
+            session['tipo'] = tipo  
+            if tipo == 'gerente':
+                return redirect('/painel-gerente')
+            elif tipo == 'funcionario':
+                return redirect('/painel-funcionario')
+            elif tipo == 'cliente':
+                return redirect('/perfil')
+        else:
+            return redirect(url_for('login', erro_login=1))
+
+    return render_template('login.html')
+
 
 
 @app.route('/logout')
